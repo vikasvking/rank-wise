@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'core/json.dart';
+import 'core/palette.dart';
 import 'core/session.dart';
+import 'core/theme.dart';
 import 'screens/account_issue_screen.dart';
 import 'screens/login_screen.dart';
 import 'student/student_home.dart';
@@ -15,40 +18,39 @@ void main() {
   // After signing out (or the token expiring), close every open screen
   session.onSignedOut = () => navigatorKey.currentState?.popUntil((route) => route.isFirst);
   session.restore();
-  runApp(RankwiseApp(session: session));
-}
-
-const Color kBrand = Color(0xFF7A1F3D); // Rankwise burgundy
-
-ThemeData buildTheme(Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(seedColor: kBrand, brightness: brightness);
-  return ThemeData(
-    colorScheme: scheme,
-    useMaterial3: true,
-    cardTheme: CardThemeData(
-      elevation: 0,
-      color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ),
-  );
+  final theme = ThemeController()..load();
+  runApp(RankwiseApp(session: session, theme: theme));
 }
 
 class RankwiseApp extends StatelessWidget {
-  const RankwiseApp({super.key, required this.session});
+  const RankwiseApp({super.key, required this.session, required this.theme});
 
   final AppSession session;
+  final ThemeController theme;
 
   @override
   Widget build(BuildContext context) {
-    return AppScope(
-      session: session,
-      child: MaterialApp(
-        title: 'Rankwise',
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        theme: buildTheme(Brightness.light),
-        darkTheme: buildTheme(Brightness.dark),
-        home: const AuthGate(),
+    return ThemeScope(
+      controller: theme,
+      child: AppScope(
+        session: session,
+        // The brand colour follows who is signed in (students burgundy, teachers indigo, admins emerald),
+        // and Light / Dark / System follows the setting under Me or the sun / moon button.
+        child: ListenableBuilder(
+          listenable: Listenable.merge([session, theme]),
+          builder: (context, _) {
+            final brand = Ramp.forRole(session.user?.str('role'));
+            return MaterialApp(
+              title: 'Rankwise',
+              debugShowCheckedModeBanner: false,
+              navigatorKey: navigatorKey,
+              theme: buildTheme(Brightness.light, brand),
+              darkTheme: buildTheme(Brightness.dark, brand),
+              themeMode: theme.mode,
+              home: const AuthGate(),
+            );
+          },
+        ),
       ),
     );
   }

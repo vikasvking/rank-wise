@@ -57,3 +57,16 @@ While a strict test is open the app pings the server every 15 seconds. When the 
 background (another app, home button, screen lock) and comes back, it reports how long it was away.
 The server applies the same rules as the website: under 5 seconds is ignored, the first leave warns,
 the second blocks. If the app is closed, the pings stop and the student is blocked after about 90 seconds.
+
+## Look and theme
+
+- Colours come from the website (`lib/core/palette.dart`, `lib/core/theme.dart`): students and visitors burgundy (rose),
+  teachers indigo, admins emerald, on slate greys; test cards use the same Strict (red) / PIN (sky) / Open (emerald)
+  badges and exam colours as the site.
+- Light / Dark / System: the sun / moon button in each tab's top bar, or Me → Appearance. Saved on the phone;
+  System (the default) follows the phone.
+
+## Retaking tests
+
+A submitted test can be retaken as often as the student likes (needs the Rails side from `rankwise-retakes.patch`).
+Tests with a closing time can be retaken only after they close. Retakes are practice: only the first attempt is ranked.

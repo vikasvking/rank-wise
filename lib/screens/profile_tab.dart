@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/config.dart';
 import '../core/json.dart';
 import '../core/session.dart';
+import '../core/theme.dart';
 import '../student/history_screen.dart';
 import '../student/membership_screen.dart';
 import '../widgets/common.dart';
@@ -20,7 +21,7 @@ class ProfileTab extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Me')),
+      appBar: AppBar(title: const Text('Me'), actions: const [ThemeToggleButton()]),
       body: RefreshIndicator(
         onRefresh: () async {
           try {
@@ -36,7 +37,9 @@ class ProfileTab extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  child: Text(_initial(user.str('name')), style: const TextStyle(fontSize: 22)),
+                  backgroundColor: context.rw.brandSoft,
+                  foregroundColor: context.rw.brandFg,
+                  child: Text(_initial(user.str('name')), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -56,6 +59,18 @@ class ProfileTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            SurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Appearance', style: TextStyle(fontWeight: FontWeight.w600, color: context.rw.strong)),
+                  Text('Light, dark, or follow your phone', style: TextStyle(fontSize: 12, color: context.rw.faint)),
+                  const SizedBox(height: 12),
+                  const SizedBox(width: double.infinity, child: ThemeModePicker()),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Card(
               child: Column(
                 children: [

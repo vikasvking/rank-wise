@@ -30,7 +30,7 @@ class _RanksTabState extends State<RanksTab> {
   Widget build(BuildContext context) {
     final api = AppScope.read(context).api;
     return Scaffold(
-      appBar: AppBar(title: const Text('Ranks')),
+      appBar: AppBar(title: const Text('Ranks'), actions: const [ThemeToggleButton()]),
       body: Loader<J>(
         key: ValueKey(_exam),
         load: () => api.get('/leaderboard', {'exam': _exam}),

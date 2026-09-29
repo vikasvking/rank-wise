@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/session.dart';
+import '../core/theme.dart';
 import '../widgets/common.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -47,7 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final session = AppScope.of(context);
     final text = Theme.of(context).textTheme;
     final notice = session.notice;
+    final rw = context.rw;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        shape: const Border(),
+        actions: const [ThemeToggleButton(), SizedBox(width: 4)],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -58,12 +65,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(Icons.emoji_events_outlined, size: 56, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(height: 12),
-                    Text('Rankwise', textAlign: TextAlign.center, style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 4),
+                    Center(
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(color: rw.button, borderRadius: BorderRadius.circular(16)),
+                        child: const Text('R', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Rankwise', textAlign: TextAlign.center, style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w600, color: rw.strong, letterSpacing: -0.5)),
+                    const SizedBox(height: 6),
                     Text('Tests, practice and ranks for UPSC, JEE, NEET, SSC, IBPS and CBSE',
-                        textAlign: TextAlign.center, style: text.bodyMedium),
+                        textAlign: TextAlign.center, style: TextStyle(color: rw.muted)),
                     const SizedBox(height: 28),
                     if (notice != null) ...[
                       NoticeBox(tone: NoticeTone.warning, child: Text(notice)),
@@ -101,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _busy ? null : _signIn,
                       style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                       child: _busy
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : const Text('Sign in'),
                     ),
                     const SizedBox(height: 8),

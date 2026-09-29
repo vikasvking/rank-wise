@@ -124,6 +124,7 @@ class _QuestionsTabState extends State<QuestionsTab> {
             icon: const Icon(Icons.upload_file),
             onPressed: () => openWebsite(context, '/questions/upload_form'),
           ),
+          const ThemeToggleButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _open(), icon: const Icon(Icons.add), label: const Text('Add question')),

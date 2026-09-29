@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/api.dart';
 import '../core/config.dart';
 import '../core/json.dart';
+import '../core/theme.dart';
 
 /// A message for any error thrown by the API or the app.
 String messageOf(Object error) => error is ApiException ? error.message : 'Something went wrong. Please try again.';
@@ -189,24 +190,24 @@ class _LoaderState<T> extends State<Loader<T>> {
   }
 }
 
-/// A small rounded label.
+/// A small rounded label: grey by default (the website's slate chips), or in [color] on a pale [background].
 class Pill extends StatelessWidget {
-  const Pill(this.label, {super.key, this.color, this.icon});
+  const Pill(this.label, {super.key, this.color, this.background, this.icon});
 
   final String label;
   final Color? color;
+  final Color? background;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final fg = color ?? scheme.onSecondaryContainer;
+    final rw = context.rw;
+    final c = color;
+    final fg = c ?? rw.neutralFg;
+    final bg = background ?? (c != null ? Color.alphaBlend(c.withAlpha(rw.dark ? 46 : 26), rw.card) : rw.neutralBg);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color == null ? scheme.secondaryContainer : scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -218,29 +219,112 @@ class Pill extends StatelessWidget {
   }
 }
 
-/// A number with a caption, for stat rows.
+/// The exam's name in the exam's own colour (indigo UPSC, orange JEE Main...), as on the website.
+class ExamChip extends StatelessWidget {
+  const ExamChip(this.exam, {super.key});
+
+  final J exam;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = examChipColors(context, exam.str('code'));
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+      child: Text(examName(exam), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg)),
+    );
+  }
+}
+
+/// 🛡️ Strict / 🔐 PIN / 🟢 Open to all
+class KindBadge extends StatelessWidget {
+  const KindBadge(this.test, {super.key});
+
+  final J test;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = kindStyle(context, kindOfTest(test));
+    return Pill(style.label, icon: style.icon, color: style.badgeFg, background: style.badgeBg);
+  }
+}
+
+/// A white (dark: slate-900) rounded card with a hairline border, optionally with a coloured bar on the left
+/// like the website's test cards.
+class SurfaceCard extends StatelessWidget {
+  const SurfaceCard({super.key, required this.child, this.stripe, this.onTap, this.padding = const EdgeInsets.all(16), this.color, this.borderColor});
+
+  final Widget child;
+  final Color? stripe;
+  final VoidCallback? onTap;
+  final EdgeInsetsGeometry padding;
+  final Color? color;
+  final Color? borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final rw = context.rw;
+    final bar = stripe;
+    final content = Padding(padding: padding, child: child);
+    return Material(
+      color: color ?? rw.card,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor ?? rw.border)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: bar == null
+            ? content
+            : DecoratedBox(
+                decoration: BoxDecoration(border: Border(left: BorderSide(color: bar, width: 4))),
+                child: content,
+              ),
+      ),
+    );
+  }
+}
+
+enum StatTone { plain, success, danger }
+
+/// A number with a caption (and an optional line under it), like the website's stat cards.
 class StatTile extends StatelessWidget {
-  const StatTile({super.key, required this.label, required this.value, this.color});
+  const StatTile({super.key, required this.label, required this.value, this.color, this.sub, this.tone = StatTone.plain});
 
   final String label;
   final String value;
   final Color? color;
+  final String? sub;
+  final StatTone tone;
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: text.labelMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
-            const SizedBox(height: 4),
-            Text(value, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700, color: color)),
+    final rw = context.rw;
+    final (bg, border, labelColor) = switch (tone) {
+      StatTone.success => (rw.successBg, rw.success.withAlpha(50), rw.success),
+      StatTone.danger => (rw.dangerBg, rw.danger.withAlpha(50), rw.danger),
+      StatTone.plain => (rw.card, rw.border, rw.muted),
+    };
+    final extra = sub;
+    return SurfaceCard(
+      color: bg,
+      borderColor: border,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: labelColor, fontWeight: tone == StatTone.plain ? FontWeight.w400 : FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: color ?? rw.strong,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              )),
+          if (extra != null) ...[
+            const SizedBox(height: 2),
+            Text(extra, style: TextStyle(fontSize: 12, color: rw.faint)),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -278,10 +362,12 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+      padding: const EdgeInsets.fromLTRB(2, 22, 2, 8),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
+          Expanded(
+            child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: context.rw.strong, letterSpacing: -0.2)),
+          ),
           if (trailing != null) trailing!,
         ],
       ),
@@ -297,20 +383,22 @@ class EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rw = context.rw;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       child: Column(
         children: [
-          Icon(icon, size: 44, color: Theme.of(context).colorScheme.outline),
+          Icon(icon, size: 40, color: rw.faint),
           const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.outline)),
+          Text(message, textAlign: TextAlign.center, style: TextStyle(color: rw.muted)),
         ],
       ),
     );
   }
 }
 
-/// A box highlighting something the user should read (upgrade options, strict mode rules...).
+/// A box highlighting something the user should read (upgrade options, strict mode rules...),
+/// in the website's alert colours.
 class NoticeBox extends StatelessWidget {
   const NoticeBox({super.key, required this.child, this.tone = NoticeTone.info});
 
@@ -319,22 +407,105 @@ class NoticeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final rw = context.rw;
     final (bg, fg) = switch (tone) {
-      NoticeTone.info => (scheme.secondaryContainer, scheme.onSecondaryContainer),
-      NoticeTone.warning => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
-      NoticeTone.danger => (scheme.errorContainer, scheme.onErrorContainer),
+      NoticeTone.info => (rw.infoBg, rw.info),
+      NoticeTone.warning => (rw.warningBg, rw.warning),
+      NoticeTone.danger => (rw.dangerBg, rw.danger),
+      NoticeTone.success => (rw.successBg, rw.success),
+      NoticeTone.promo => (rw.promoBg, rw.promoFg),
     };
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-      child: DefaultTextStyle.merge(style: TextStyle(color: fg), child: child),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: fg.withAlpha(50)),
+      ),
+      child: DefaultTextStyle.merge(style: TextStyle(color: fg, fontSize: 14, height: 1.35), child: child),
     );
   }
 }
 
-enum NoticeTone { info, warning, danger }
+enum NoticeTone { info, warning, danger, success, promo }
 
 /// Shows the exam name, e.g. "UPSC Prelims".
 String examName(J exam) => exam.str('name', exam.str('code'));
+
+// ---------- app chrome ----------
+
+/// The sun / moon button in the top bar, like the website's theme toggle.
+class ThemeToggleButton extends StatelessWidget {
+  const ThemeToggleButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final dark = brightness == Brightness.dark;
+    return IconButton(
+      tooltip: dark ? 'Light mode' : 'Dark mode',
+      icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, color: context.rw.muted),
+      onPressed: () => ThemeScope.read(context).toggle(brightness),
+    );
+  }
+}
+
+/// Light / Dark / System, for the Me tab.
+class ThemeModePicker extends StatelessWidget {
+  const ThemeModePicker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = ThemeScope.of(context);
+    return SegmentedButton<ThemeMode>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Light')),
+        ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Dark')),
+        ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined), label: Text('System')),
+      ],
+      selected: {controller.mode},
+      onSelectionChanged: (modes) => controller.setMode(modes.first),
+    );
+  }
+}
+
+/// The website's logo: a brand-coloured "R" tile next to the name.
+class BrandTitle extends StatelessWidget {
+  const BrandTitle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final rw = context.rw;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: rw.button, borderRadius: BorderRadius.circular(8)),
+          child: const Text('R', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        ),
+        const SizedBox(width: 10),
+        const Text('Rankwise'),
+      ],
+    );
+  }
+}
+
+/// The bottom tab bar with the website's hairline above it.
+class BrandNavBar extends StatelessWidget {
+  const BrandNavBar({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: context.rw.border))),
+      child: child,
+    );
+  }
+}

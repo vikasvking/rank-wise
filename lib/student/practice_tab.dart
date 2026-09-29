@@ -20,7 +20,7 @@ class _PracticeTabState extends State<PracticeTab> {
   Widget build(BuildContext context) {
     final api = AppScope.read(context).api;
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice')),
+      appBar: AppBar(title: const Text('Practice'), actions: const [ThemeToggleButton()]),
       body: Loader<J>(
         key: ValueKey(_allExams),
         load: () => api.get('/question_bank', {'exams': _allExams ? 'all' : null}),

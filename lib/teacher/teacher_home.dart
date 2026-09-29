@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/profile_tab.dart';
+import '../widgets/common.dart';
 import 'questions_tab.dart';
 import 'teacher_tests_tab.dart';
 
@@ -24,7 +25,8 @@ class _TeacherHomeState extends State<TeacherHome> {
         index: _index,
         children: [for (var i = 0; i < tabs.length; i++) _visited.contains(i) ? tabs[i] : const SizedBox.shrink()],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: BrandNavBar(
+        child: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() {
           _index = i;
@@ -35,6 +37,7 @@ class _TeacherHomeState extends State<TeacherHome> {
           NavigationDestination(icon: Icon(Icons.quiz_outlined), selectedIcon: Icon(Icons.quiz), label: 'Questions'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Me'),
         ],
+        ),
       ),
     );
   }

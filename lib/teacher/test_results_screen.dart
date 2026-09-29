@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../core/format.dart';
 import '../core/json.dart';
 import '../core/session.dart';
+import '../core/theme.dart';
 import '../widgets/common.dart';
 import '../widgets/test_card.dart';
 
@@ -155,7 +156,7 @@ class _ResultsTab extends StatelessWidget {
                     Text('${fmtNum(r.dbl('marks'))} / ${fmtNum(r.dbl('max_marks'))}', style: const TextStyle(fontWeight: FontWeight.w700)),
                     Text(
                       '${fmtNum(r.dbl('percentage'), decimals: 1)}% ${r.flag('passed') ? 'pass' : 'fail'}',
-                      style: TextStyle(fontSize: 12, color: r.flag('passed') ? Colors.green.shade700 : scheme.error),
+                      style: TextStyle(fontSize: 12, color: r.flag('passed') ? context.rw.success : context.rw.danger),
                     ),
                   ],
                 ),
@@ -208,13 +209,14 @@ class _LiveTabState extends State<_LiveTab> {
     }
   }
 
-  static const _labels = {
-    'writing': ('🟢 Writing', Colors.green),
-    'opening': ('🟢 Opening test', Colors.green),
-    'no_signal': ('🟡 No signal', Colors.orange),
-    'blocked': ('🚫 Blocked', Colors.red),
-    'submitted': ('✅ Submitted', Colors.blueGrey),
-  };
+  static (String, Color) _label(Rw rw, String status) => switch (status) {
+        'writing' => ('🟢 Writing', rw.success),
+        'opening' => ('🟢 Opening test', rw.success),
+        'no_signal' => ('🟡 No signal', rw.warning),
+        'blocked' => ('🚫 Blocked', rw.danger),
+        'submitted' => ('✅ Submitted', rw.muted),
+        _ => (status, rw.faint),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -238,9 +240,9 @@ class _LiveTabState extends State<_LiveTab> {
           if (_error != null) Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
           const SizedBox(height: 10),
           TileGrid(columns: 3, children: [
-            StatTile(label: 'Writing', value: '${counts.integer('writing') + counts.integer('opening')}', color: Colors.green.shade700),
-            StatTile(label: 'No signal', value: '${counts.integer('no_signal')}', color: Colors.orange.shade800),
-            StatTile(label: 'Blocked', value: '${counts.integer('blocked')}', color: Colors.red.shade700),
+            StatTile(label: 'Writing', value: '${counts.integer('writing') + counts.integer('opening')}', color: context.rw.success, tone: StatTone.success),
+            StatTile(label: 'No signal', value: '${counts.integer('no_signal')}', color: context.rw.warning),
+            StatTile(label: 'Blocked', value: '${counts.integer('blocked')}', color: context.rw.danger, tone: StatTone.danger),
             StatTile(label: 'Submitted', value: '${counts.integer('submitted')}'),
             StatTile(label: 'Not started', value: '${counts.integer('not_started')}'),
             StatTile(label: 'Questions', value: '${data.integer('total_questions')}'),
@@ -249,7 +251,7 @@ class _LiveTabState extends State<_LiveTab> {
           if (rows.isEmpty) const EmptyView('Nobody has started yet.'),
           for (final r in rows)
             Builder(builder: (context) {
-              final label = _labels[r.str('status')] ?? (r.str('status'), Colors.grey);
+              final label = _label(context.rw, r.str('status'));
               final details = <String>[
                 '${r.integer('answered')} of ${data.integer('total_questions')} answered',
                 if (r.integer('leave_count') > 0) '${r.integer('leave_count')} warning(s)',

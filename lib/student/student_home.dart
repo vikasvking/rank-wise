@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/profile_tab.dart';
+import '../widgets/common.dart';
 import 'dashboard_tab.dart';
 import 'practice_tab.dart';
 import 'ranks_tab.dart';
@@ -26,7 +27,7 @@ class _StudentHomeState extends State<StudentHome> {
   @override
   Widget build(BuildContext context) {
     final tabs = <Widget>[
-      DashboardTab(onOpenTests: () => _go(1), onOpenRanks: () => _go(3)),
+      DashboardTab(onOpenTests: () => _go(1), onOpenPractice: () => _go(2), onOpenRanks: () => _go(3)),
       const TestsTab(),
       const PracticeTab(),
       const RanksTab(),
@@ -37,7 +38,8 @@ class _StudentHomeState extends State<StudentHome> {
         index: _index,
         children: [for (var i = 0; i < tabs.length; i++) _visited.contains(i) ? tabs[i] : const SizedBox.shrink()],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: BrandNavBar(
+        child: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: _go,
         destinations: const [
@@ -47,6 +49,7 @@ class _StudentHomeState extends State<StudentHome> {
           NavigationDestination(icon: Icon(Icons.leaderboard_outlined), selectedIcon: Icon(Icons.leaderboard), label: 'Ranks'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Me'),
         ],
+        ),
       ),
     );
   }

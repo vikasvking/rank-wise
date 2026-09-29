@@ -34,7 +34,7 @@ class HistoryScreen extends StatelessWidget {
                       title: Text(a.str('title')),
                       subtitle: Text([
                         examName(a.obj('exam')),
-                        a.str('kind') == 'test' ? 'Test' : 'Practice',
+                        a.str('kind') == 'test' ? (a.flag('retake') ? 'Retake (practice)' : 'Test') : 'Practice',
                         fmtDateTime(a.time('started_at')),
                       ].join(' · ')),
                       trailing: Text(switch (a.str('status')) {

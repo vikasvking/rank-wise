@@ -32,7 +32,10 @@ class _TestsTabState extends State<TestsTab> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tests'),
-        actions: [TextButton.icon(onPressed: _enterPin, icon: const Icon(Icons.pin_outlined), label: const Text('Enter PIN'))],
+        actions: [
+          TextButton.icon(onPressed: _enterPin, icon: const Icon(Icons.pin_outlined), label: const Text('Enter PIN')),
+          const ThemeToggleButton(),
+        ],
       ),
       body: Loader<J>(
         key: ValueKey('tests-$_exam-$_version'),

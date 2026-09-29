@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/json.dart';
 import '../core/session.dart';
+import '../core/theme.dart';
 import '../widgets/common.dart';
 import '../widgets/test_card.dart';
 import 'test_editor_screen.dart';
@@ -28,7 +29,7 @@ class _TeacherTestsTabState extends State<TeacherTestsTab> {
   Widget build(BuildContext context) {
     final api = AppScope.read(context).api;
     return Scaffold(
-      appBar: AppBar(title: const Text('My tests')),
+      appBar: AppBar(title: const Text('My tests'), actions: const [ThemeToggleButton()]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(),
         icon: const Icon(Icons.add),
@@ -73,14 +74,14 @@ class _TeacherTestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final pin = test.strOrNull('pin_code');
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
+    final rw = context.rw;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SurfaceCard(
+        stripe: kindStyle(context, kindOfTest(test)).stripe,
         onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
-          child: Row(
+        padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+        child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
@@ -88,16 +89,16 @@ class _TeacherTestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(spacing: 6, runSpacing: 6, children: [
-                      Pill(examName(test.obj('exam'))),
-                      if (test.flag('strict')) const Pill('Strict', icon: Icons.shield_outlined),
-                      if (test.str('access') == 'open') const Pill('Open'),
+                      KindBadge(test),
+                      WindowBadge(test),
+                      ExamChip(test.obj('exam')),
                       if (test.flag('locked')) const Pill('Locked', icon: Icons.lock_outline),
-                      if (test.flag('live_view')) const Pill('🔴 Live view'),
-                      if (test.flag('free_sample')) const Pill('🎁 Free sample'),
-                      if (test.str('visibility') != 'public') Pill(test.str('audience')),
+                      if (test.flag('live_view')) Pill('Live view', icon: Icons.sensors, color: rw.danger, background: rw.dangerBg),
+                      if (test.flag('free_sample')) Pill('Free sample', icon: Icons.card_giftcard, color: rw.promoFg, background: rw.promoBg),
+                      if (test.str('visibility') != 'public') Pill(test.str('audience'), icon: Icons.group_outlined),
                     ]),
                     const SizedBox(height: 8),
-                    Text(test.str('title'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Text(test.str('title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: rw.strong)),
                     const SizedBox(height: 2),
                     Text(
                       '${test.integer('question_count')} questions · ${test.integer('duration_minutes')} min · '
@@ -114,7 +115,7 @@ class _TeacherTestCard extends StatelessWidget {
                             showSnack(context, 'PIN $pin copied');
                           },
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            Text('PIN $pin', style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w800, fontSize: 16)),
+                            Text('PIN $pin', style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700, fontSize: 16, color: rw.brandFg)),
                             const SizedBox(width: 6),
                             const Icon(Icons.copy, size: 16),
                           ]),
@@ -124,8 +125,7 @@ class _TeacherTestCard extends StatelessWidget {
                 ),
               ),
               if (onEdit != null) IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined), tooltip: 'Edit'),
-            ],
-          ),
+          ],
         ),
       ),
     );

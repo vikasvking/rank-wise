@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/api.dart';
 import '../core/json.dart';
 import '../core/session.dart';
+import '../core/theme.dart';
 import '../widgets/common.dart';
 import 'membership_screen.dart';
 import 'test_runner_screen.dart';
@@ -166,8 +167,8 @@ class _PracticeCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: lastResult == null
-            ? BorderSide.none
-            : BorderSide(color: lastResult! ? Colors.green.shade600 : scheme.error, width: 2),
+            ? BorderSide(color: context.rw.border)
+            : BorderSide(color: lastResult! ? context.rw.success : context.rw.danger, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -178,7 +179,7 @@ class _PracticeCard extends StatelessWidget {
               children: [
                 Text('Q$number', style: text.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
-                if (question.flag('solved')) Text('✓ Solved', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w600)),
+                if (question.flag('solved')) Pill('Solved', icon: Icons.check, color: context.rw.success, background: context.rw.successBg),
                 if (!question.flag('solved') && question.integer('attempts') > 0)
                   Text('Not solved yet', style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600)),
                 const Spacer(),
@@ -189,7 +190,7 @@ class _PracticeCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(lastResult! ? '🎉 Correct!' : '❌ Not quite.',
-                    style: TextStyle(fontWeight: FontWeight.w700, color: lastResult! ? Colors.green.shade700 : scheme.error)),
+                    style: TextStyle(fontWeight: FontWeight.w700, color: lastResult! ? context.rw.success : context.rw.danger)),
               ),
             const SizedBox(height: 6),
             Text(question.str('content'), style: text.bodyLarge),
@@ -202,9 +203,10 @@ class _PracticeCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      foregroundColor: correct == letter ? Colors.green.shade800 : (last == letter ? scheme.error : null),
+                      foregroundColor: correct == letter ? context.rw.success : (last == letter ? context.rw.danger : context.rw.body),
+                      backgroundColor: correct == letter ? context.rw.successBg : (last == letter ? context.rw.dangerBg : null),
                       side: BorderSide(
-                        color: correct == letter ? Colors.green.shade600 : (last == letter ? scheme.error : scheme.outlineVariant),
+                        color: correct == letter ? context.rw.success.withAlpha(110) : (last == letter ? context.rw.danger.withAlpha(110) : context.rw.border),
                       ),
                     ),
                     onPressed: busy ? null : () => onAnswer(letter),
