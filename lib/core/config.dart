@@ -4,7 +4,7 @@
 ///   flutter run --dart-define=RANKWISE_URL=https://your-site.onrender.com
 const String kSiteUrl = String.fromEnvironment(
   'RANKWISE_URL',
-  defaultValue: 'https://CHANGE-ME.onrender.com',
+  defaultValue: 'https://upsc-questions.onrender.com',
 );
 
 /// Free Render servers sleep after 15 idle minutes and take up to about a minute to wake up.
