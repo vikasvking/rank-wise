@@ -73,11 +73,16 @@ class ApiClient {
         'timeout',
         'Rankwise is taking too long to answer. It may be waking up; please try again.',
       );
-    } catch (_) {
+    } catch (e) {
+      // Say which server failed and why, so a wrong address or a blocked connection is easy to spot.
+      final host = Uri.parse(kSiteUrl).host;
+      final reason = e.toString().contains('Failed host lookup')
+          ? 'the address $host was not found (check RANKWISE_URL in lib/core/config.dart)'
+          : '${e.runtimeType} while contacting $host';
       throw ApiException(
         0,
         'offline',
-        'Could not reach Rankwise. Check your internet connection and try again.',
+        'Could not reach Rankwise: $reason. Check your internet connection and try again.',
       );
     }
 
