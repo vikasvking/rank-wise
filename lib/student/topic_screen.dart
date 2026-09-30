@@ -53,6 +53,11 @@ class _TopicScreenState extends State<TopicScreen> {
       if (!mounted) return;
       if (e.code == 'free_limit') {
         await showMessageDialog(context, 'Free trial', e.message);
+      } else if (e.code == 'upgrade_required') {
+        final go = await confirmDialog(context, title: 'Plus and Warrior only', message: e.message, confirmLabel: 'See plans');
+        if (go && mounted) {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => const MembershipScreen()));
+        }
       } else {
         showSnack(context, e.message);
       }
@@ -133,6 +138,21 @@ class _TopicScreenState extends State<TopicScreen> {
                   '${topic.integer('solved')} of ${topic.integer('total')} solved · ${topic.integer('attempts')} attempts'
                   '${topic.dbl('accuracy_pct') != null ? ' · ${topic.dbl('accuracy_pct')}% accuracy' : ''}',
                 ),
+                if (free) ...[
+                  const SizedBox(height: 10),
+                  NoticeBox(
+                    tone: NoticeTone.promo,
+                    child: Row(
+                      children: [
+                        const Expanded(child: Text('🌱 Free trial: you can see every question, and answer the 🎁 sample questions once each.')),
+                        TextButton(
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MembershipScreen())),
+                          child: const Text('Unlock all'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -153,6 +173,9 @@ class _TopicScreenState extends State<TopicScreen> {
                   Builder(
                     builder: (context) {
                       final id = q.integer('id');
+                      if (q.flag('locked')) {
+                        return _LockedCard(question: q, number: q.integer('number'));
+                      }
                       _shownAt.putIfAbsent(id, DateTime.now);
                       return _PracticeCard(
                         question: _updated[id] ?? q,
@@ -167,6 +190,71 @@ class _TopicScreenState extends State<TopicScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// A question a Free student can see but not answer: its text, and a grey Upgrade box instead of the options.
+class _LockedCard extends StatelessWidget {
+  const _LockedCard({required this.question, required this.number});
+
+  final J question;
+  final int number;
+
+  @override
+  Widget build(BuildContext context) {
+    final rw = context.rw;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SurfaceCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Q$number', style: TextStyle(fontWeight: FontWeight.w600, color: rw.strong)),
+                const SizedBox(width: 8),
+                const Pill('Plus / Warrior', icon: Icons.lock_outline),
+                const Spacer(),
+                if (question.strOrNull('year') != null) Text(question.str('year'), style: TextStyle(fontSize: 12, color: rw.faint)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(question.str('content'), style: TextStyle(fontSize: 15, color: rw.strong, height: 1.4)),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: rw.neutralBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: rw.dark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Icon(Icons.lock_outline, size: 18, color: rw.neutralFg),
+                    const SizedBox(width: 6),
+                    Text('Upgrade to attempt', style: TextStyle(fontWeight: FontWeight.w600, color: rw.strong)),
+                  ]),
+                  const SizedBox(height: 4),
+                  Text('Plus or Warrior unlocks this question, its answer and explanation.', style: TextStyle(fontSize: 13, color: rw.muted)),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: rw.dark ? const Color(0xFF475569) : const Color(0xFF334155),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MembershipScreen())),
+                    child: const Text('See plans'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

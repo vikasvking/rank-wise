@@ -51,9 +51,9 @@ class _PracticeTabState extends State<PracticeTab> {
                   const Padding(
                     padding: EdgeInsets.only(bottom: 12),
                     child: NoticeBox(
-                      tone: NoticeTone.warning,
+                      tone: NoticeTone.promo,
                       child: Text(
-                        '🌱 Free trial: you can answer the 🎁 sample questions once each. '
+                        '🌱 Free trial: browse every question, and answer the 🎁 sample questions once each. '
                         'Plus and Warrior members practise everything, with timed topic practice.',
                       ),
                     ),
