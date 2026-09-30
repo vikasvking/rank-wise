@@ -16,13 +16,17 @@ class TestsTab extends StatefulWidget {
 }
 
 class _TestsTabState extends State<TestsTab> {
-  String? _exam; // null = the server's default ("mine" when the student picked exams)
+  String?
+  _exam; // null = the server's default ("mine" when the student picked exams)
   int _version = 0; // bump to reload
 
   Future<void> _enterPin() async {
     final testId = await askForPin(context);
     if (testId == null || !mounted) return;
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => TestDetailScreen(testId: testId)));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TestDetailScreen(testId: testId)),
+    );
     if (mounted) setState(() => _version++);
   }
 
@@ -33,7 +37,11 @@ class _TestsTabState extends State<TestsTab> {
       appBar: AppBar(
         title: const Text('Tests'),
         actions: [
-          TextButton.icon(onPressed: _enterPin, icon: const Icon(Icons.pin_outlined), label: const Text('Enter PIN')),
+          TextButton.icon(
+            onPressed: _enterPin,
+            icon: const Icon(Icons.pin_outlined),
+            label: const Text('Enter PIN'),
+          ),
           const ThemeToggleButton(),
         ],
       ),
@@ -46,7 +54,8 @@ class _TestsTabState extends State<TestsTab> {
           final options = <MapEntry<String, String>>[
             const MapEntry('mine', 'My exams'),
             const MapEntry('all', 'All exams'),
-            for (final e in data.list('exam_options')) MapEntry(e.str('code'), e.str('name')),
+            for (final e in data.list('exam_options'))
+              MapEntry(e.str('code'), e.str('name')),
           ];
           return RefreshIndicator(
             onRefresh: reload,
@@ -71,14 +80,23 @@ class _TestsTabState extends State<TestsTab> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (tests.isEmpty) const EmptyView('No tests here yet. Try "All exams", or enter a PIN from your teacher.'),
+                if (tests.isEmpty)
+                  const EmptyView(
+                    'No tests here yet. Try "All exams", or enter a PIN from your teacher.',
+                  ),
                 for (final t in tests)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: StudentTestCard(
                       test: t,
                       onTap: () async {
-                        await Navigator.push(context, MaterialPageRoute(builder: (_) => TestDetailScreen(testId: t.integer('id'))));
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                TestDetailScreen(testId: t.integer('id')),
+                          ),
+                        );
                         reload();
                       },
                     ),
@@ -123,7 +141,9 @@ class _PinDialogState extends State<_PinDialog> {
       _error = null;
     });
     try {
-      final data = await AppScope.read(context).api.post('/tests/verify_pin', {'pin_code': pin});
+      final data = await AppScope.read(
+        context,
+      ).api.post('/tests/verify_pin', {'pin_code': pin});
       if (mounted) Navigator.pop(context, data.integer('test_id'));
     } on ApiException catch (e) {
       if (mounted) {
@@ -142,7 +162,9 @@ class _PinDialogState extends State<_PinDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Your teacher shares a 6-character PIN for PIN-protected tests.'),
+          const Text(
+            'Your teacher shares a 6-character PIN for PIN-protected tests.',
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
@@ -155,8 +177,14 @@ class _PinDialogState extends State<_PinDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(onPressed: _busy ? null : _submit, child: Text(_busy ? 'Checking…' : 'Continue')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _busy ? null : _submit,
+          child: Text(_busy ? 'Checking…' : 'Continue'),
+        ),
       ],
     );
   }

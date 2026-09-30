@@ -30,7 +30,10 @@ class _RanksTabState extends State<RanksTab> {
   Widget build(BuildContext context) {
     final api = AppScope.read(context).api;
     return Scaffold(
-      appBar: AppBar(title: const Text('Ranks'), actions: const [ThemeToggleButton()]),
+      appBar: AppBar(
+        title: const Text('Ranks'),
+        actions: const [ThemeToggleButton()],
+      ),
       body: Loader<J>(
         key: ValueKey(_exam),
         load: () => api.get('/leaderboard', {'exam': _exam}),
@@ -52,7 +55,8 @@ class _RanksTabState extends State<RanksTab> {
                         ChoiceChip(
                           label: Text(e.str('name')),
                           selected: e.str('code') == exam.str('code'),
-                          onSelected: (_) => setState(() => _exam = e.str('code')),
+                          onSelected: (_) =>
+                              setState(() => _exam = e.str('code')),
                         ),
                     ],
                   ),
@@ -65,12 +69,18 @@ class _RanksTabState extends State<RanksTab> {
                         Text(examName(exam), style: text.labelLarge),
                         const SizedBox(height: 6),
                         Text(
-                          rank.intOrNull('rank') != null ? '#${rank.integer('rank')}' : 'Not ranked yet',
-                          style: text.displaySmall?.copyWith(fontWeight: FontWeight.w800),
+                          rank.intOrNull('rank') != null
+                              ? '#${rank.integer('rank')}'
+                              : 'Not ranked yet',
+                          style: text.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        Text(rank.intOrNull('rank') != null
-                            ? 'of ${rank.integer('students')} students'
-                            : 'Answer ${examName(exam)} questions to get a rank'),
+                        Text(
+                          rank.intOrNull('rank') != null
+                              ? 'of ${rank.integer('students')} students'
+                              : 'Answer ${examName(exam)} questions to get a rank',
+                        ),
                       ],
                     ),
                   ),
@@ -80,22 +90,37 @@ class _RanksTabState extends State<RanksTab> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Table(
-                      columnWidths: const {0: FlexColumnWidth(2.2), 1: FlexColumnWidth(), 2: FlexColumnWidth(), 3: FlexColumnWidth()},
-                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                      columnWidths: const {
+                        0: FlexColumnWidth(2.2),
+                        1: FlexColumnWidth(),
+                        2: FlexColumnWidth(),
+                        3: FlexColumnWidth(),
+                      },
+                      defaultVerticalAlignment:
+                          TableCellVerticalAlignment.middle,
                       children: [
-                        TableRow(children: [
-                          _cell('', bold: true),
-                          _cell('You', bold: true),
-                          _cell('Top ${rank.integer('top_count')}', bold: true),
-                          _cell('Everyone', bold: true),
-                        ]),
+                        TableRow(
+                          children: [
+                            _cell('', bold: true),
+                            _cell('You', bold: true),
+                            _cell(
+                              'Top ${rank.integer('top_count')}',
+                              bold: true,
+                            ),
+                            _cell('Everyone', bold: true),
+                          ],
+                        ),
                         for (final m in metrics)
-                          TableRow(children: [
-                            _cell('${m.str('label')}${m.str('better') == 'lower' ? ' ↓' : ''}'),
-                            _cell(_value(m, 'me'), bold: true),
-                            _cell(_value(m, 'top')),
-                            _cell(_value(m, 'platform')),
-                          ]),
+                          TableRow(
+                            children: [
+                              _cell(
+                                '${m.str('label')}${m.str('better') == 'lower' ? ' ↓' : ''}',
+                              ),
+                              _cell(_value(m, 'me'), bold: true),
+                              _cell(_value(m, 'top')),
+                              _cell(_value(m, 'platform')),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -114,7 +139,13 @@ class _RanksTabState extends State<RanksTab> {
   }
 
   Widget _cell(String value, {bool bold = false}) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Text(value, style: TextStyle(fontWeight: bold ? FontWeight.w700 : FontWeight.normal, fontSize: 13)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    child: Text(
+      value,
+      style: TextStyle(
+        fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
+        fontSize: 13,
+      ),
+    ),
+  );
 }

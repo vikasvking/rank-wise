@@ -9,7 +9,9 @@ import '../core/json.dart';
 import '../core/theme.dart';
 
 /// A message for any error thrown by the API or the app.
-String messageOf(Object error) => error is ApiException ? error.message : 'Something went wrong. Please try again.';
+String messageOf(Object error) => error is ApiException
+    ? error.message
+    : 'Something went wrong. Please try again.';
 
 void showSnack(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
@@ -30,9 +32,16 @@ Future<bool> confirmDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Cancel'),
+        ),
         FilledButton(
-          style: destructive ? FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error) : null,
+          style: destructive
+              ? FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                )
+              : null,
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(confirmLabel),
         ),
@@ -42,21 +51,34 @@ Future<bool> confirmDialog(
   return result ?? false;
 }
 
-Future<void> showMessageDialog(BuildContext context, String title, String message) {
+Future<void> showMessageDialog(
+  BuildContext context,
+  String title,
+  String message,
+) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
       content: Text(message),
-      actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('OK'),
+        ),
+      ],
     ),
   );
 }
 
 /// Opens a page of the Rankwise website in the browser (sign-up, password reset, Excel uploads...).
 Future<void> openWebsite(BuildContext context, String path) async {
-  final ok = await launchUrl(Uri.parse('$kSiteUrl$path'), mode: LaunchMode.externalApplication);
-  if (!ok && context.mounted) showSnack(context, 'Could not open $kSiteUrl$path');
+  final ok = await launchUrl(
+    Uri.parse('$kSiteUrl$path'),
+    mode: LaunchMode.externalApplication,
+  );
+  if (!ok && context.mounted)
+    showSnack(context, 'Could not open $kSiteUrl$path');
 }
 
 class LoadingView extends StatefulWidget {
@@ -122,12 +144,19 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 48,
+              color: Theme.of(context).colorScheme.outline,
+            ),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              FilledButton.tonal(onPressed: onRetry, child: const Text('Try again')),
+              FilledButton.tonal(
+                onPressed: onRetry,
+                child: const Text('Try again'),
+              ),
             ],
           ],
         ),
@@ -142,7 +171,12 @@ class Loader<T> extends StatefulWidget {
   const Loader({super.key, required this.load, required this.builder});
 
   final Future<T> Function() load;
-  final Widget Function(BuildContext context, T data, Future<void> Function() reload) builder;
+  final Widget Function(
+    BuildContext context,
+    T data,
+    Future<void> Function() reload,
+  )
+  builder;
 
   @override
   State<Loader<T>> createState() => _LoaderState<T>();
@@ -183,7 +217,8 @@ class _LoaderState<T> extends State<Loader<T>> {
   Widget build(BuildContext context) {
     if (!_hasData) {
       final error = _error;
-      if (error != null) return ErrorView(message: messageOf(error), onRetry: () => _run());
+      if (error != null)
+        return ErrorView(message: messageOf(error), onRetry: () => _run());
       return const LoadingView();
     }
     return widget.builder(context, _data as T, () => _run());
@@ -204,15 +239,32 @@ class Pill extends StatelessWidget {
     final rw = context.rw;
     final c = color;
     final fg = c ?? rw.neutralFg;
-    final bg = background ?? (c != null ? Color.alphaBlend(c.withAlpha(rw.dark ? 46 : 26), rw.card) : rw.neutralBg);
+    final bg =
+        background ??
+        (c != null
+            ? Color.alphaBlend(c.withAlpha(rw.dark ? 46 : 26), rw.card)
+            : rw.neutralBg);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: 13, color: fg), const SizedBox(width: 4)],
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg)),
+          if (icon != null) ...[
+            Icon(icon, size: 13, color: fg),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: fg,
+            ),
+          ),
         ],
       ),
     );
@@ -230,8 +282,14 @@ class ExamChip extends StatelessWidget {
     final (bg, fg) = examChipColors(context, exam.str('code'));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
-      child: Text(examName(exam), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        examName(exam),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
+      ),
     );
   }
 }
@@ -245,14 +303,27 @@ class KindBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = kindStyle(context, kindOfTest(test));
-    return Pill(style.label, icon: style.icon, color: style.badgeFg, background: style.badgeBg);
+    return Pill(
+      style.label,
+      icon: style.icon,
+      color: style.badgeFg,
+      background: style.badgeBg,
+    );
   }
 }
 
 /// A white (dark: slate-900) rounded card with a hairline border, optionally with a coloured bar on the left
 /// like the website's test cards.
 class SurfaceCard extends StatelessWidget {
-  const SurfaceCard({super.key, required this.child, this.stripe, this.onTap, this.padding = const EdgeInsets.all(16), this.color, this.borderColor});
+  const SurfaceCard({
+    super.key,
+    required this.child,
+    this.stripe,
+    this.onTap,
+    this.padding = const EdgeInsets.all(16),
+    this.color,
+    this.borderColor,
+  });
 
   final Widget child;
   final Color? stripe;
@@ -268,14 +339,19 @@ class SurfaceCard extends StatelessWidget {
     final content = Padding(padding: padding, child: child);
     return Material(
       color: color ?? rw.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: borderColor ?? rw.border)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor ?? rw.border),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: bar == null
             ? content
             : DecoratedBox(
-                decoration: BoxDecoration(border: Border(left: BorderSide(color: bar, width: 4))),
+                decoration: BoxDecoration(
+                  border: Border(left: BorderSide(color: bar, width: 4)),
+                ),
                 child: content,
               ),
       ),
@@ -287,7 +363,14 @@ enum StatTone { plain, success, danger }
 
 /// A number with a caption (and an optional line under it), like the website's stat cards.
 class StatTile extends StatelessWidget {
-  const StatTile({super.key, required this.label, required this.value, this.color, this.sub, this.tone = StatTone.plain});
+  const StatTile({
+    super.key,
+    required this.label,
+    required this.value,
+    this.color,
+    this.sub,
+    this.tone = StatTone.plain,
+  });
 
   final String label;
   final String value;
@@ -311,15 +394,26 @@ class StatTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: labelColor, fontWeight: tone == StatTone.plain ? FontWeight.w400 : FontWeight.w600)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: labelColor,
+              fontWeight: tone == StatTone.plain
+                  ? FontWeight.w400
+                  : FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: color ?? rw.strong,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              )),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: color ?? rw.strong,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
           if (extra != null) ...[
             const SizedBox(height: 2),
             Text(extra, style: TextStyle(fontSize: 12, color: rw.faint)),
@@ -344,10 +438,21 @@ class TileGrid extends StatelessWidget {
       final cells = <Widget>[];
       for (var j = 0; j < columns; j++) {
         if (j > 0) cells.add(const SizedBox(width: 10));
-        cells.add(Expanded(child: i + j < children.length ? children[i + j] : const SizedBox()));
+        cells.add(
+          Expanded(
+            child: i + j < children.length ? children[i + j] : const SizedBox(),
+          ),
+        );
       }
       if (rows.isNotEmpty) rows.add(const SizedBox(height: 10));
-      rows.add(IntrinsicHeight(child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cells)));
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: cells,
+          ),
+        ),
+      );
     }
     return Column(children: rows);
   }
@@ -366,7 +471,15 @@ class SectionTitle extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: context.rw.strong, letterSpacing: -0.2)),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: context.rw.strong,
+                letterSpacing: -0.2,
+              ),
+            ),
           ),
           if (trailing != null) trailing!,
         ],
@@ -390,7 +503,11 @@ class EmptyView extends StatelessWidget {
         children: [
           Icon(icon, size: 40, color: rw.faint),
           const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center, style: TextStyle(color: rw.muted)),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: rw.muted),
+          ),
         ],
       ),
     );
@@ -400,7 +517,11 @@ class EmptyView extends StatelessWidget {
 /// A box highlighting something the user should read (upgrade options, strict mode rules...),
 /// in the website's alert colours.
 class NoticeBox extends StatelessWidget {
-  const NoticeBox({super.key, required this.child, this.tone = NoticeTone.info});
+  const NoticeBox({
+    super.key,
+    required this.child,
+    this.tone = NoticeTone.info,
+  });
 
   final Widget child;
   final NoticeTone tone;
@@ -423,7 +544,10 @@ class NoticeBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: fg.withAlpha(50)),
       ),
-      child: DefaultTextStyle.merge(style: TextStyle(color: fg, fontSize: 14, height: 1.35), child: child),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: fg, fontSize: 14, height: 1.35),
+        child: child,
+      ),
     );
   }
 }
@@ -445,7 +569,10 @@ class ThemeToggleButton extends StatelessWidget {
     final dark = brightness == Brightness.dark;
     return IconButton(
       tooltip: dark ? 'Light mode' : 'Dark mode',
-      icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, color: context.rw.muted),
+      icon: Icon(
+        dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+        color: context.rw.muted,
+      ),
       onPressed: () => ThemeScope.read(context).toggle(brightness),
     );
   }
@@ -461,9 +588,21 @@ class ThemeModePicker extends StatelessWidget {
     return SegmentedButton<ThemeMode>(
       showSelectedIcon: false,
       segments: const [
-        ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Light')),
-        ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Dark')),
-        ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined), label: Text('System')),
+        ButtonSegment(
+          value: ThemeMode.light,
+          icon: Icon(Icons.light_mode_outlined),
+          label: Text('Light'),
+        ),
+        ButtonSegment(
+          value: ThemeMode.dark,
+          icon: Icon(Icons.dark_mode_outlined),
+          label: Text('Dark'),
+        ),
+        ButtonSegment(
+          value: ThemeMode.system,
+          icon: Icon(Icons.brightness_auto_outlined),
+          label: Text('System'),
+        ),
       ],
       selected: {controller.mode},
       onSelectionChanged: (modes) => controller.setMode(modes.first),
@@ -485,8 +624,18 @@ class BrandTitle extends StatelessWidget {
           width: 28,
           height: 28,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: rw.button, borderRadius: BorderRadius.circular(8)),
-          child: const Text('R', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          decoration: BoxDecoration(
+            color: rw.button,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text(
+            'R',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
         const SizedBox(width: 10),
         const Text('Rankwise'),
@@ -504,7 +653,9 @@ class BrandNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: context.rw.border))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: context.rw.border)),
+      ),
       child: child,
     );
   }

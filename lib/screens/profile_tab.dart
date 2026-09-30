@@ -21,7 +21,10 @@ class ProfileTab extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Me'), actions: const [ThemeToggleButton()]),
+      appBar: AppBar(
+        title: const Text('Me'),
+        actions: const [ThemeToggleButton()],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           try {
@@ -39,20 +42,38 @@ class ProfileTab extends StatelessWidget {
                   radius: 28,
                   backgroundColor: context.rw.brandSoft,
                   foregroundColor: context.rw.brandFg,
-                  child: Text(_initial(user.str('name')), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    _initial(user.str('name')),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.str('name'), style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                      Text(
+                        user.str('name'),
+                        style: text.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       Text(user.str('email_address'), style: text.bodySmall),
                       const SizedBox(height: 4),
-                      Wrap(spacing: 6, children: [
-                        Pill(switch (user.str('role')) { 'admin' => 'Admin', 'teacher' => 'Teacher', _ => 'Student' }),
-                        if (student) Pill(user.str('tier_label')),
-                      ]),
+                      Wrap(
+                        spacing: 6,
+                        children: [
+                          Pill(switch (user.str('role')) {
+                            'admin' => 'Admin',
+                            'teacher' => 'Teacher',
+                            _ => 'Student',
+                          }),
+                          if (student) Pill(user.str('tier_label')),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -63,10 +84,22 @@ class ProfileTab extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Appearance', style: TextStyle(fontWeight: FontWeight.w600, color: context.rw.strong)),
-                  Text('Light, dark, or follow your phone', style: TextStyle(fontSize: 12, color: context.rw.faint)),
+                  Text(
+                    'Appearance',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: context.rw.strong,
+                    ),
+                  ),
+                  Text(
+                    'Light, dark, or follow your phone',
+                    style: TextStyle(fontSize: 12, color: context.rw.faint),
+                  ),
                   const SizedBox(height: 12),
-                  const SizedBox(width: double.infinity, child: ThemeModePicker()),
+                  const SizedBox(
+                    width: double.infinity,
+                    child: ThemeModePicker(),
+                  ),
                 ],
               ),
             ),
@@ -77,25 +110,42 @@ class ProfileTab extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
                     title: const Text('Edit profile'),
-                    subtitle: Text(student
-                        ? 'Name and the exams you are preparing for'
-                        : 'Name and the subjects you teach'),
+                    subtitle: Text(
+                      student
+                          ? 'Name and the exams you are preparing for'
+                          : 'Name and the subjects you teach',
+                    ),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ProfileEditScreen(),
+                      ),
+                    ),
                   ),
                   if (student) ...[
                     ListTile(
                       leading: const Icon(Icons.history),
                       title: const Text('My tests and practice'),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HistoryScreen(),
+                        ),
+                      ),
                     ),
                     ListTile(
                       leading: const Icon(Icons.workspace_premium_outlined),
                       title: const Text('Membership'),
                       subtitle: Text(user.str('tier_label')),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MembershipScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MembershipScreen(),
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -108,16 +158,31 @@ class ProfileTab extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.open_in_new),
                     title: const Text('Open the website'),
-                    subtitle: Text(student
-                        ? 'Password, email, schools and parent consent'
-                        : 'Excel uploads, batches, schools, password and admin pages'),
+                    subtitle: Text(
+                      student
+                          ? 'Password, email, schools and parent consent'
+                          : 'Excel uploads, batches, schools, password and admin pages',
+                    ),
                     onTap: () => openWebsite(context, '/profile'),
                   ),
                   ListTile(
-                    leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
-                    title: Text('Sign out', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                    leading: Icon(
+                      Icons.logout,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    title: Text(
+                      'Sign out',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
                     onTap: () async {
-                      final ok = await confirmDialog(context, title: 'Sign out?', message: 'You can sign in again any time.', confirmLabel: 'Sign out');
+                      final ok = await confirmDialog(
+                        context,
+                        title: 'Sign out?',
+                        message: 'You can sign in again any time.',
+                        confirmLabel: 'Sign out',
+                      );
                       if (ok) await session.signOut();
                     },
                   ),
@@ -125,7 +190,11 @@ class ProfileTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Connected to $kSiteUrl', textAlign: TextAlign.center, style: text.bodySmall),
+            Text(
+              'Connected to $kSiteUrl',
+              textAlign: TextAlign.center,
+              style: text.bodySmall,
+            ),
           ],
         ),
       ),
@@ -133,4 +202,5 @@ class ProfileTab extends StatelessWidget {
   }
 }
 
-String _initial(String name) => name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
+String _initial(String name) =>
+    name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();

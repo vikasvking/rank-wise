@@ -56,7 +56,10 @@ extension JsonRead on Map<String, dynamic> {
   List<int> ints(String key) {
     final v = this[key];
     if (v is! List) return <int>[];
-    return v.map((e) => e is num ? e.toInt() : int.tryParse(e.toString())).whereType<int>().toList();
+    return v
+        .map((e) => e is num ? e.toInt() : int.tryParse(e.toString()))
+        .whereType<int>()
+        .toList();
   }
 
   DateTime? time(String key) {

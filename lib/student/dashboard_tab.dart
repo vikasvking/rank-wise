@@ -9,11 +9,37 @@ import '../widgets/test_card.dart';
 import 'membership_screen.dart';
 import 'test_detail_screen.dart';
 
-const _weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const _monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const _weekdays = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+const _monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 class DashboardTab extends StatelessWidget {
-  const DashboardTab({super.key, required this.onOpenTests, required this.onOpenRanks, required this.onOpenPractice});
+  const DashboardTab({
+    super.key,
+    required this.onOpenTests,
+    required this.onOpenRanks,
+    required this.onOpenPractice,
+  });
 
   final VoidCallback onOpenTests;
   final VoidCallback onOpenRanks;
@@ -23,7 +49,10 @@ class DashboardTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final api = AppScope.read(context).api;
     return Scaffold(
-      appBar: AppBar(title: const BrandTitle(), actions: const [ThemeToggleButton(), SizedBox(width: 4)]),
+      appBar: AppBar(
+        title: const BrandTitle(),
+        actions: const [ThemeToggleButton(), SizedBox(width: 4)],
+      ),
       body: Loader<J>(
         load: () => api.get('/dashboard'),
         builder: (context, data, reload) {
@@ -40,7 +69,9 @@ class DashboardTab extends StatelessWidget {
           final now = DateTime.now();
           final greeting = now.hour >= 5 && now.hour < 12
               ? 'Good morning'
-              : (now.hour >= 12 && now.hour < 17 ? 'Good afternoon' : 'Good evening');
+              : (now.hour >= 12 && now.hour < 17
+                    ? 'Good afternoon'
+                    : 'Good evening');
           final firstName = user.str('name').trim().split(RegExp(r'\s+')).first;
           final ranked = rank.intOrNull('rank') != null;
           final exam = examName(rank.obj('exam'));
@@ -50,17 +81,27 @@ class DashboardTab extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
               children: [
-                Text('${_weekdays[now.weekday - 1]}, ${now.day} ${_monthNames[now.month - 1]}', style: TextStyle(fontSize: 13, color: rw.muted)),
+                Text(
+                  '${_weekdays[now.weekday - 1]}, ${now.day} ${_monthNames[now.month - 1]}',
+                  style: TextStyle(fontSize: 13, color: rw.muted),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   firstName.isEmpty ? greeting : '$greeting, $firstName',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: rw.strong, letterSpacing: -0.4),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: rw.strong,
+                    letterSpacing: -0.4,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   [
                     if (streak > 0) "You're on a $streak-day streak.",
-                    left == 0 ? "Today's target of $target questions is done 🎉" : '$left more question${left == 1 ? '' : 's'} to reach today\'s target.',
+                    left == 0
+                        ? "Today's target of $target questions is done 🎉"
+                        : '$left more question${left == 1 ? '' : 's'} to reach today\'s target.',
                   ].join(' '),
                   style: TextStyle(color: rw.muted),
                 ),
@@ -70,11 +111,22 @@ class DashboardTab extends StatelessWidget {
                   runSpacing: 8,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    FilledButton(onPressed: onOpenPractice, child: const Text('Continue practice')),
-                    Pill(user.str('tier_label'), icon: Icons.workspace_premium_outlined),
+                    FilledButton(
+                      onPressed: onOpenPractice,
+                      child: const Text('Continue practice'),
+                    ),
+                    Pill(
+                      user.str('tier_label'),
+                      icon: Icons.workspace_premium_outlined,
+                    ),
                     if (user.str('tier') != 'warrior')
                       TextButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MembershipScreen())),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MembershipScreen(),
+                          ),
+                        ),
                         child: const Text('Upgrade'),
                       ),
                   ],
@@ -83,40 +135,71 @@ class DashboardTab extends StatelessWidget {
                   const SizedBox(height: 14),
                   const NoticeBox(
                     tone: NoticeTone.promo,
-                    child: Text("🌱 You're on the free trial: the sample tests and sample questions, each once. "
-                        "Join your school's plan (Plus) or become a Warrior to unlock everything."),
+                    child: Text(
+                      "🌱 You're on the free trial: the sample tests and sample questions, each once. "
+                      "Join your school's plan (Plus) or become a Warrior to unlock everything.",
+                    ),
                   ),
                 ],
                 const SizedBox(height: 18),
-                TileGrid(children: [
-                  StatTile(label: 'Questions solved', value: '${stats.integer('solved')}', sub: '${stats.integer('completion_pct')}% of the question bank'),
-                  StatTile(
-                    label: 'Accuracy',
-                    value: '${fmtNum(stats.dbl('accuracy_pct'), decimals: 1)}%',
-                    sub: '${stats.integer('wrong')} still wrong',
-                  ),
-                  StatTile(label: 'Streak', value: '$streak day${streak == 1 ? '' : 's'}', sub: '$target+ questions a day'),
-                  GestureDetector(
-                    onTap: onOpenRanks,
-                    child: StatTile(
-                      label: 'Rank · $exam',
-                      value: ranked ? '#${rank.integer('rank')}' : '—',
-                      sub: ranked ? 'of ${rank.integer('students')} $exam students' : 'Answer a $exam question to get ranked',
+                TileGrid(
+                  children: [
+                    StatTile(
+                      label: 'Questions solved',
+                      value: '${stats.integer('solved')}',
+                      sub:
+                          '${stats.integer('completion_pct')}% of the question bank',
                     ),
-                  ),
-                ]),
+                    StatTile(
+                      label: 'Accuracy',
+                      value:
+                          '${fmtNum(stats.dbl('accuracy_pct'), decimals: 1)}%',
+                      sub: '${stats.integer('wrong')} still wrong',
+                    ),
+                    StatTile(
+                      label: 'Streak',
+                      value: '$streak day${streak == 1 ? '' : 's'}',
+                      sub: '$target+ questions a day',
+                    ),
+                    GestureDetector(
+                      onTap: onOpenRanks,
+                      child: StatTile(
+                        label: 'Rank · $exam',
+                        value: ranked ? '#${rank.integer('rank')}' : '—',
+                        sub: ranked
+                            ? 'of ${rank.integer('students')} $exam students'
+                            : 'Answer a $exam question to get ranked',
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 _WeekCard(target: target, week: week),
-                SectionTitle('Available tests', trailing: TextButton(onPressed: onOpenTests, child: const Text('View all'))),
+                SectionTitle(
+                  'Available tests',
+                  trailing: TextButton(
+                    onPressed: onOpenTests,
+                    child: const Text('View all'),
+                  ),
+                ),
                 if (tests.isEmpty)
-                  const EmptyView('No live or upcoming tests for your exams right now.', icon: Icons.event_available_outlined),
+                  const EmptyView(
+                    'No live or upcoming tests for your exams right now.',
+                    icon: Icons.event_available_outlined,
+                  ),
                 for (final t in tests)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: StudentTestCard(
                       test: t,
                       onTap: () async {
-                        await Navigator.push(context, MaterialPageRoute(builder: (_) => TestDetailScreen(testId: t.integer('id'))));
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                TestDetailScreen(testId: t.integer('id')),
+                          ),
+                        );
                         reload();
                       },
                     ),
@@ -144,8 +227,14 @@ class _WeekCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('This week', style: TextStyle(fontWeight: FontWeight.w600, color: rw.strong)),
-          Text('$target answers a day keep the streak going.', style: TextStyle(fontSize: 12, color: rw.faint)),
+          Text(
+            'This week',
+            style: TextStyle(fontWeight: FontWeight.w600, color: rw.strong),
+          ),
+          Text(
+            '$target answers a day keep the streak going.',
+            style: TextStyle(fontSize: 12, color: rw.faint),
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -153,8 +242,14 @@ class _WeekCard extends StatelessWidget {
               for (final day in week)
                 Column(
                   children: [
-                    Text(day.str('day_name'),
-                        style: TextStyle(fontSize: 11, color: day.flag('today') ? rw.brandFg : rw.faint, fontWeight: FontWeight.w500)),
+                    Text(
+                      day.str('day_name'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: day.flag('today') ? rw.brandFg : rw.faint,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     Container(
                       width: 34,
@@ -164,15 +259,25 @@ class _WeekCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: day.flag('target_met')
                             ? rw.success
-                            : (day.integer('solved') > 0 ? rw.brandSoft : rw.neutralBg),
-                        border: day.flag('today') ? Border.all(color: rw.brandFg, width: 1.5) : null,
+                            : (day.integer('solved') > 0
+                                  ? rw.brandSoft
+                                  : rw.neutralBg),
+                        border: day.flag('today')
+                            ? Border.all(color: rw.brandFg, width: 1.5)
+                            : null,
                       ),
                       child: Text(
                         '${day.integer('solved')}',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: day.flag('today') ? FontWeight.w700 : FontWeight.w500,
-                          color: day.flag('target_met') ? (rw.dark ? Colors.black : Colors.white) : (day.integer('solved') > 0 ? rw.brandFg : rw.muted),
+                          fontWeight: day.flag('today')
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: day.flag('target_met')
+                              ? (rw.dark ? Colors.black : Colors.white)
+                              : (day.integer('solved') > 0
+                                    ? rw.brandFg
+                                    : rw.muted),
                         ),
                       ),
                     ),

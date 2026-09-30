@@ -62,7 +62,10 @@ class AppSession extends ChangeNotifier {
   }
 
   Future<void> signIn(String email, String password) async {
-    final data = await api.post('/session', {'email_address': email.trim(), 'password': password});
+    final data = await api.post('/session', {
+      'email_address': email.trim(),
+      'password': password,
+    });
     final token = data.str('token');
     api.token = token;
     final prefs = await SharedPreferences.getInstance();
@@ -111,11 +114,14 @@ class AppSession extends ChangeNotifier {
 
 /// Makes the [AppSession] available to every screen.
 class AppScope extends InheritedNotifier<AppSession> {
-  const AppScope({super.key, required AppSession session, required super.child}) : super(notifier: session);
+  const AppScope({super.key, required AppSession session, required super.child})
+    : super(notifier: session);
 
   /// Rebuilds the caller when the session changes.
-  static AppSession of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<AppScope>()!.notifier!;
+  static AppSession of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppScope>()!.notifier!;
 
   /// Reads the session without rebuilding (for button handlers and loaders).
-  static AppSession read(BuildContext context) => context.getInheritedWidgetOfExactType<AppScope>()!.notifier!;
+  static AppSession read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<AppScope>()!.notifier!;
 }

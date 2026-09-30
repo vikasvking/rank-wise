@@ -25,27 +25,44 @@ class HistoryScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                if (attempts.isEmpty) const EmptyView('No tests or practice runs yet.'),
+                if (attempts.isEmpty)
+                  const EmptyView('No tests or practice runs yet.'),
                 for (final a in attempts)
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: Icon(a.str('kind') == 'test' ? Icons.assignment_outlined : Icons.menu_book_outlined),
+                      leading: Icon(
+                        a.str('kind') == 'test'
+                            ? Icons.assignment_outlined
+                            : Icons.menu_book_outlined,
+                      ),
                       title: Text(a.str('title')),
-                      subtitle: Text([
-                        examName(a.obj('exam')),
-                        a.str('kind') == 'test' ? (a.flag('retake') ? 'Retake (practice)' : 'Test') : 'Practice',
-                        fmtDateTime(a.time('started_at')),
-                      ].join(' · ')),
+                      subtitle: Text(
+                        [
+                          examName(a.obj('exam')),
+                          a.str('kind') == 'test'
+                              ? (a.flag('retake')
+                                    ? 'Retake (practice)'
+                                    : 'Test')
+                              : 'Practice',
+                          fmtDateTime(a.time('started_at')),
+                        ].join(' · '),
+                      ),
                       trailing: Text(switch (a.str('status')) {
-                        'finished' => a.flag('results_released') ? 'Result' : 'Submitted',
+                        'finished' =>
+                          a.flag('results_released') ? 'Result' : 'Submitted',
                         'blocked' => 'Blocked',
                         _ => 'Resume',
                       }),
                       onTap: () async {
                         final token = a.str('token');
-                        final screen = a.str('status') == 'finished' ? ResultScreen(token: token) : TestRunnerScreen(token: token);
-                        await Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+                        final screen = a.str('status') == 'finished'
+                            ? ResultScreen(token: token)
+                            : TestRunnerScreen(token: token);
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => screen),
+                        );
                         reload();
                       },
                     ),

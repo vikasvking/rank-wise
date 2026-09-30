@@ -5,7 +5,17 @@ import '../lib/core/json.dart';
 
 void main() {
   test('JSON readers never crash on missing or odd values', () {
-    final J data = {'a': 1, 'b': '2', 'c': null, 'd': {'x': true}, 'e': [1, '2', 'x'], 'f': [{'y': 1}, 'no']};
+    final J data = {
+      'a': 1,
+      'b': '2',
+      'c': null,
+      'd': {'x': true},
+      'e': [1, '2', 'x'],
+      'f': [
+        {'y': 1},
+        'no',
+      ],
+    };
     expect(data.integer('a'), 1);
     expect(data.integer('b'), 2);
     expect(data.integer('c', 7), 7);

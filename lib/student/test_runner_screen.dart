@@ -22,7 +22,8 @@ class TestRunnerScreen extends StatefulWidget {
   State<TestRunnerScreen> createState() => _TestRunnerScreenState();
 }
 
-class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBindingObserver {
+class _TestRunnerScreenState extends State<TestRunnerScreen>
+    with WidgetsBindingObserver {
   J _attempt = <String, dynamic>{};
   List<J> _questions = <J>[];
   final Map<int, String> _answers = {}; // question id -> "A".."D" or "SKIPPED"
@@ -30,7 +31,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
   String? _selected;
   bool _loading = true;
   bool _saving = false;
-  bool _done = false; // leaving this screen (result, blocked, or the student went back)
+  bool _done =
+      false; // leaving this screen (result, blocked, or the student went back)
   String? _error;
 
   DateTime? _deadline;
@@ -78,11 +80,18 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
         _questions = questions;
         _answers
           ..clear()
-          ..addAll({for (final e in answers.entries) int.tryParse(e.key) ?? -1: e.value.toString()});
+          ..addAll({
+            for (final e in answers.entries)
+              int.tryParse(e.key) ?? -1: e.value.toString(),
+          });
         _leaveCount = attempt.integer('leave_count');
         final seconds = attempt.intOrNull('seconds_left');
-        _deadline = seconds == null ? null : DateTime.now().add(Duration(seconds: seconds));
-        final firstOpen = _questions.indexWhere((q) => !_answers.containsKey(q.integer('id')));
+        _deadline = seconds == null
+            ? null
+            : DateTime.now().add(Duration(seconds: seconds));
+        final firstOpen = _questions.indexWhere(
+          (q) => !_answers.containsKey(q.integer('id')),
+        );
         _loading = false;
         _show(firstOpen < 0 ? 0 : firstOpen);
       });
@@ -111,7 +120,10 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
     }
     if (_strict) {
       final every = _attempt.integer('heartbeat_every', 15);
-      _heartbeat = Timer.periodic(Duration(seconds: every), (_) => _sendHeartbeat());
+      _heartbeat = Timer.periodic(
+        Duration(seconds: every),
+        (_) => _sendHeartbeat(),
+      );
       _sendHeartbeat();
     }
   }
@@ -176,7 +188,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
   }
 
   Future<void> _submit() async {
-    final open = _questions.where((q) => !_answers.containsKey(q.integer('id'))).length;
+    final open = _questions
+        .where((q) => !_answers.containsKey(q.integer('id')))
+        .length;
     final ok = await confirmDialog(
       context,
       title: 'Submit test?',
@@ -222,7 +236,10 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
     if (_done) return;
     _done = true;
     _stopTimers();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ResultScreen(token: widget.token)));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => ResultScreen(token: widget.token)),
+    );
   }
 
   Future<void> _showBlocked(String message) async {
@@ -236,7 +253,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
   // ---------- strict mode ----------
 
   Future<void> _sendHeartbeat() async {
-    if (_done || _leftAt != null) return; // no heartbeats while the app is in the background
+    if (_done || _leftAt != null)
+      return; // no heartbeats while the app is in the background
     try {
       final data = await AppScope.read(context).api.post('$_base/heartbeat');
       if (mounted) _applyStrictState(data);
@@ -248,7 +266,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!_strict || _done || _loading) return;
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
       _leftAt ??= DateTime.now();
     } else if (state == AppLifecycleState.resumed) {
       final left = _leftAt;
@@ -259,7 +278,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
 
   Future<void> _reportLeave(int seconds) async {
     try {
-      final data = await AppScope.read(context).api.post('$_base/report_leave', {'seconds': seconds});
+      final data = await AppScope.read(
+        context,
+      ).api.post('$_base/report_leave', {'seconds': seconds});
       if (mounted) _applyStrictState(data);
     } catch (_) {
       // offline: the next heartbeat will tell
@@ -269,14 +290,21 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
   void _applyStrictState(J data) {
     switch (data.str('status')) {
       case 'blocked':
-        _showBlocked(data.str('message', 'You were blocked from this test for leaving it. Ask your teacher to reinstate you.'));
+        _showBlocked(
+          data.str(
+            'message',
+            'You were blocked from this test for leaving it. Ask your teacher to reinstate you.',
+          ),
+        );
       case 'finished':
         _goToResult();
       case 'ok':
         final count = data.integer('leave_count', _leaveCount);
         if (count > _leaveCount && !_done) {
           _leaveCount = count;
-          setState(() => _attempt['warnings_left'] = data.integer('warnings_left'));
+          setState(
+            () => _attempt['warnings_left'] = data.integer('warnings_left'),
+          );
           showMessageDialog(
             context,
             '⚠️ You left the test',
@@ -320,7 +348,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
               children: [
                 Text('Questions', style: Theme.of(ctx).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                const Text('Filled = answered · outlined = skipped · empty = not yet'),
+                const Text(
+                  'Filled = answered · outlined = skipped · empty = not yet',
+                ),
                 const SizedBox(height: 12),
                 Flexible(
                   child: SingleChildScrollView(
@@ -329,30 +359,40 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                       runSpacing: 8,
                       children: [
                         for (var i = 0; i < _questions.length; i++)
-                          Builder(builder: (_) {
-                            final a = _answers[_questions[i].integer('id')];
-                            final answered = a != null && a != 'SKIPPED';
-                            return SizedBox(
-                              width: 44,
-                              height: 44,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  backgroundColor: answered ? scheme.primary : null,
-                                  foregroundColor: answered ? scheme.onPrimary : null,
-                                  side: BorderSide(
-                                    color: i == _index ? scheme.tertiary : (a == 'SKIPPED' ? scheme.primary : scheme.outlineVariant),
-                                    width: i == _index ? 3 : 1,
+                          Builder(
+                            builder: (_) {
+                              final a = _answers[_questions[i].integer('id')];
+                              final answered = a != null && a != 'SKIPPED';
+                              return SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    backgroundColor: answered
+                                        ? scheme.primary
+                                        : null,
+                                    foregroundColor: answered
+                                        ? scheme.onPrimary
+                                        : null,
+                                    side: BorderSide(
+                                      color: i == _index
+                                          ? scheme.tertiary
+                                          : (a == 'SKIPPED'
+                                                ? scheme.primary
+                                                : scheme.outlineVariant),
+                                      width: i == _index ? 3 : 1,
+                                    ),
                                   ),
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    _goTo(i);
+                                  },
+                                  child: Text('${i + 1}'),
                                 ),
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  _goTo(i);
-                                },
-                                child: Text('${i + 1}'),
-                              ),
-                            );
-                          }),
+                              );
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -374,7 +414,10 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_attempt.str('title', 'Test'), overflow: TextOverflow.ellipsis),
+          title: Text(
+            _attempt.str('title', 'Test'),
+            overflow: TextOverflow.ellipsis,
+          ),
           actions: [
             if (_deadline != null)
               Padding(
@@ -383,11 +426,18 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                   child: Pill(
                     fmtClock(_secondsLeft),
                     icon: Icons.timer_outlined,
-                    color: _secondsLeft < 60 ? Theme.of(context).colorScheme.error : null,
+                    color: _secondsLeft < 60
+                        ? Theme.of(context).colorScheme.error
+                        : null,
                   ),
                 ),
               ),
-            if (_questions.isNotEmpty) IconButton(onPressed: _openPalette, icon: const Icon(Icons.grid_view), tooltip: 'All questions'),
+            if (_questions.isNotEmpty)
+              IconButton(
+                onPressed: _openPalette,
+                icon: const Icon(Icons.grid_view),
+                tooltip: 'All questions',
+              ),
           ],
         ),
         body: _body(context),
@@ -421,7 +471,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
 
     return Column(
       children: [
-        LinearProgressIndicator(value: _questions.isEmpty ? 0 : answeredCount / _questions.length),
+        LinearProgressIndicator(
+          value: _questions.isEmpty ? 0 : answeredCount / _questions.length,
+        ),
         if (_strict)
           Container(
             width: double.infinity,
@@ -429,7 +481,11 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               '🛡️ Strict test — stay in the app. Warnings left: ${_attempt.integer('warnings_left')}',
-              style: TextStyle(color: scheme.onErrorContainer, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: scheme.onErrorContainer,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         Expanded(
@@ -441,7 +497,10 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                 style: text.labelLarge?.copyWith(color: scheme.outline),
               ),
               const SizedBox(height: 8),
-              Text(q.str('content'), style: text.titleMedium?.copyWith(height: 1.4)),
+              Text(
+                q.str('content'),
+                style: text.titleMedium?.copyWith(height: 1.4),
+              ),
               const SizedBox(height: 16),
               for (final letter in const ['A', 'B', 'C', 'D'])
                 if (options.str(letter).isNotEmpty)
@@ -451,12 +510,16 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                       letter: letter,
                       text: options.str(letter),
                       selected: _selected == letter,
-                      onTap: _saving ? null : () => setState(() => _selected = letter),
+                      onTap: _saving
+                          ? null
+                          : () => setState(() => _selected = letter),
                     ),
                   ),
               if (saved != null)
                 Text(
-                  saved == 'SKIPPED' ? 'You skipped this question earlier.' : 'Saved answer: $saved. Pick another option and save to change it.',
+                  saved == 'SKIPPED'
+                      ? 'You skipped this question earlier.'
+                      : 'Saved answer: $saved. Pick another option and save to change it.',
                   style: text.bodySmall?.copyWith(color: scheme.outline),
                 ),
             ],
@@ -487,13 +550,17 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                     Expanded(
                       flex: 2,
                       child: FilledButton(
-                        onPressed: _saving || _selected == null ? null : () => _save(_selected!),
+                        onPressed: _saving || _selected == null
+                            ? null
+                            : () => _save(_selected!),
                         child: Text(_saving ? 'Saving…' : 'Save & next'),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton.outlined(
-                      onPressed: _index < _questions.length - 1 ? () => _goTo(_index + 1) : null,
+                      onPressed: _index < _questions.length - 1
+                          ? () => _goTo(_index + 1)
+                          : null,
                       icon: const Icon(Icons.chevron_right),
                       tooltip: 'Next',
                     ),
@@ -501,7 +568,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
                 ),
                 TextButton(
                   onPressed: _saving ? null : _submit,
-                  child: Text('Submit test · $answeredCount of ${_questions.length} answered'),
+                  child: Text(
+                    'Submit test · $answeredCount of ${_questions.length} answered',
+                  ),
                 ),
               ],
             ),
@@ -513,7 +582,12 @@ class _TestRunnerScreenState extends State<TestRunnerScreen> with WidgetsBinding
 }
 
 class _OptionTile extends StatelessWidget {
-  const _OptionTile({required this.letter, required this.text, required this.selected, required this.onTap});
+  const _OptionTile({
+    required this.letter,
+    required this.text,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String letter;
   final String text;
@@ -527,7 +601,10 @@ class _OptionTile extends StatelessWidget {
       color: selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant, width: selected ? 2 : 1),
+        side: BorderSide(
+          color: selected ? scheme.primary : scheme.outlineVariant,
+          width: selected ? 2 : 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -539,11 +616,25 @@ class _OptionTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: selected ? scheme.primary : scheme.surfaceContainerHighest,
-                child: Text(letter, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: selected ? scheme.onPrimary : scheme.onSurface)),
+                backgroundColor: selected
+                    ? scheme.primary
+                    : scheme.surfaceContainerHighest,
+                child: Text(
+                  letter,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? scheme.onPrimary : scheme.onSurface,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
-              Expanded(child: Padding(padding: const EdgeInsets.only(top: 4), child: Text(text))),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(text),
+                ),
+              ),
             ],
           ),
         ),

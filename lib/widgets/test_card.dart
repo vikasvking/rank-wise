@@ -30,11 +30,22 @@ class WindowBadge extends StatelessWidget {
     final rw = context.rw;
     final ends = test.time('ends_at');
     return switch (test.str('window')) {
-      'upcoming' => Pill('Opens ${fmtDateTime(test.time('starts_at'))}', icon: Icons.schedule, color: rw.warning, background: rw.warningBg),
+      'upcoming' => Pill(
+        'Opens ${fmtDateTime(test.time('starts_at'))}',
+        icon: Icons.schedule,
+        color: rw.warning,
+        background: rw.warningBg,
+      ),
       'closed' => const Pill('Closed'),
-      _ => ends != null
-          ? Pill('Live until ${fmtDateTime(ends)}', icon: Icons.schedule, color: rw.warning, background: rw.warningBg)
-          : const Pill('Available any time'),
+      _ =>
+        ends != null
+            ? Pill(
+                'Live until ${fmtDateTime(ends)}',
+                icon: Icons.schedule,
+                color: rw.warning,
+                background: rw.warningBg,
+              )
+            : const Pill('Available any time'),
     };
   }
 }
@@ -67,18 +78,32 @@ class StudentTestCard extends StatelessWidget {
     );
 
     Widget status(String label, {Color? color, IconData? icon}) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[Icon(icon, size: 16, color: color ?? rw.faint), const SizedBox(width: 6)],
-            Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: color ?? rw.faint)),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 16, color: color ?? rw.faint),
+          const SizedBox(width: 6),
+        ],
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: color ?? rw.faint,
+          ),
+        ),
+      ],
+    );
 
     final Widget action;
     if (attempt != null) {
       switch (attempt.str('status')) {
         case 'blocked':
-          action = status('Blocked — ask your teacher', color: rw.danger, icon: Icons.block);
+          action = status(
+            'Blocked — ask your teacher',
+            color: rw.danger,
+            icon: Icons.block,
+          );
         case 'finished':
           {
             final times = attempt.integer('attempt_count', 1);
@@ -87,15 +112,38 @@ class StudentTestCard extends StatelessWidget {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                FilledButton(style: secondary, onPressed: onTap, child: Text(attempt.flag('results_released') ? 'See result' : 'Submitted')),
+                FilledButton(
+                  style: secondary,
+                  onPressed: onTap,
+                  child: Text(
+                    attempt.flag('results_released')
+                        ? 'See result'
+                        : 'Submitted',
+                  ),
+                ),
                 if (attempt.flag('can_retake'))
-                  FilledButton.icon(style: primary, onPressed: onTap, icon: const Icon(Icons.refresh, size: 16), label: const Text('Retake')),
-                if (times > 1) Text('Taken $times times', style: TextStyle(fontSize: 12, color: rw.faint)),
+                  FilledButton.icon(
+                    style: primary,
+                    onPressed: onTap,
+                    icon: const Icon(Icons.refresh, size: 16),
+                    label: const Text('Retake'),
+                  ),
+                if (times > 1)
+                  Text(
+                    'Taken $times times',
+                    style: TextStyle(fontSize: 12, color: rw.faint),
+                  ),
               ],
             );
           }
         default:
-          action = FilledButton(style: primary, onPressed: onTap, child: Text(attempt.flag('retake') ? 'Resume retake' : 'Resume test'));
+          action = FilledButton(
+            style: primary,
+            onPressed: onTap,
+            child: Text(
+              attempt.flag('retake') ? 'Resume retake' : 'Resume test',
+            ),
+          );
       }
     } else if (locked) {
       action = test.str('window') == 'closed'
@@ -113,9 +161,18 @@ class StudentTestCard extends StatelessWidget {
     } else if (test.str('window') == 'closed') {
       action = status('Missed', icon: Icons.event_busy);
     } else if (test.str('access') == 'pin') {
-      action = FilledButton.icon(style: live ? primary : secondary, onPressed: onTap, icon: Icon(style.icon, size: 16), label: const Text('Enter PIN'));
+      action = FilledButton.icon(
+        style: live ? primary : secondary,
+        onPressed: onTap,
+        icon: Icon(style.icon, size: 16),
+        label: const Text('Enter PIN'),
+      );
     } else {
-      action = FilledButton(style: live ? primary : secondary, onPressed: onTap, child: Text(live ? 'Start test' : 'View details'));
+      action = FilledButton(
+        style: live ? primary : secondary,
+        onPressed: onTap,
+        child: Text(live ? 'Start test' : 'View details'),
+      );
     }
 
     return SurfaceCard(
@@ -131,13 +188,34 @@ class StudentTestCard extends StatelessWidget {
             children: [
               KindBadge(test),
               WindowBadge(test),
-              if (test.flag('free_sample')) Pill('Free sample', icon: Icons.card_giftcard, color: rw.promoFg, background: rw.promoBg),
-              if (locked) Pill('Plus / Warrior', icon: Icons.lock_outline, color: rw.warning, background: rw.warningBg),
-              if (test.str('audience') != 'Everyone' && test.str('audience').isNotEmpty) Pill(test.str('audience'), icon: Icons.group_outlined),
+              if (test.flag('free_sample'))
+                Pill(
+                  'Free sample',
+                  icon: Icons.card_giftcard,
+                  color: rw.promoFg,
+                  background: rw.promoBg,
+                ),
+              if (locked)
+                Pill(
+                  'Plus / Warrior',
+                  icon: Icons.lock_outline,
+                  color: rw.warning,
+                  background: rw.warningBg,
+                ),
+              if (test.str('audience') != 'Everyone' &&
+                  test.str('audience').isNotEmpty)
+                Pill(test.str('audience'), icon: Icons.group_outlined),
             ],
           ),
           const SizedBox(height: 10),
-          Text(test.str('title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: rw.strong)),
+          Text(
+            test.str('title'),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: rw.strong,
+            ),
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -146,13 +224,19 @@ class StudentTestCard extends StatelessWidget {
             children: [
               ExamChip(test.obj('exam')),
               Text(
-                [if (subjects.isNotEmpty) subjects.join(', '), '${test.integer('duration_minutes')} min'].join(' · '),
+                [
+                  if (subjects.isNotEmpty) subjects.join(', '),
+                  '${test.integer('duration_minutes')} min',
+                ].join(' · '),
                 style: TextStyle(fontSize: 13, color: rw.muted),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text('by ${test.str('author')}', style: TextStyle(fontSize: 12, color: rw.faint)),
+          Text(
+            'by ${test.str('author')}',
+            style: TextStyle(fontSize: 12, color: rw.faint),
+          ),
           const SizedBox(height: 12),
           action,
         ],

@@ -26,7 +26,9 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   final _topic = TextEditingController();
   final _content = TextEditingController();
   final _explanation = TextEditingController();
-  final Map<String, TextEditingController> _choices = {for (final l in const ['A', 'B', 'C', 'D']) l: TextEditingController()};
+  final Map<String, TextEditingController> _choices = {
+    for (final l in const ['A', 'B', 'C', 'D']) l: TextEditingController(),
+  };
   String? _exam;
   String _correct = 'A';
   AudienceValue _audience = AudienceValue();
@@ -41,7 +43,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
 
   @override
   void dispose() {
-    for (final c in [_year, _topic, _content, _explanation, ..._choices.values]) {
+    for (final c in [
+      _year,
+      _topic,
+      _content,
+      _explanation,
+      ..._choices.values,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -52,7 +60,9 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     try {
       final options = await api.get('/teacher/form_options');
       final id = _id;
-      final J? question = id == null ? null : (await api.get('/teacher/questions/$id')).obj('question');
+      final J? question = id == null
+          ? null
+          : (await api.get('/teacher/questions/$id')).obj('question');
       if (!mounted) return;
       setState(() {
         _options = options;
@@ -78,10 +88,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 
   String? _problem() {
-    if (_topic.text.trim().isEmpty) return 'Add a topic (subject), e.g. Physics.';
+    if (_topic.text.trim().isEmpty)
+      return 'Add a topic (subject), e.g. Physics.';
     if (_content.text.trim().isEmpty) return 'Write the question.';
-    if (_choices.values.where((c) => c.text.trim().isNotEmpty).length < 2) return 'Add at least two options.';
-    if (_choices[_correct]!.text.trim().isEmpty) return 'The correct answer ($_correct) has no text.';
+    if (_choices.values.where((c) => c.text.trim().isNotEmpty).length < 2)
+      return 'Add at least two options.';
+    if (_choices[_correct]!.text.trim().isEmpty)
+      return 'The correct answer ($_correct) has no text.';
     return _audience.problem(forTest: false);
   }
 
@@ -112,13 +125,19 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     };
     try {
       final id = _id;
-      final data = id == null ? await api.post('/teacher/questions', body) : await api.patch('/teacher/questions/$id', body);
+      final data = id == null
+          ? await api.post('/teacher/questions', body)
+          : await api.patch('/teacher/questions/$id', body);
       if (!mounted) return;
       final warning = data.strOrNull('warning');
-      showSnack(context, [data.str('message', 'Saved.'), if (warning != null) warning].join(' '));
+      showSnack(
+        context,
+        [data.str('message', 'Saved.'), if (warning != null) warning].join(' '),
+      );
       Navigator.pop(context, true);
     } on ApiException catch (e) {
-      if (mounted) await showMessageDialog(context, 'Could not save', e.message);
+      if (mounted)
+        await showMessageDialog(context, 'Could not save', e.message);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -130,10 +149,18 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_id == null ? 'Add question' : 'Edit question'),
-        actions: [if (options != null) TextButton(onPressed: _saving ? null : _save, child: Text(_saving ? 'Saving…' : 'Save'))],
+        actions: [
+          if (options != null)
+            TextButton(
+              onPressed: _saving ? null : _save,
+              child: Text(_saving ? 'Saving…' : 'Save'),
+            ),
+        ],
       ),
       body: options == null
-          ? (_loadError != null ? ErrorView(message: _loadError!, onRetry: _load) : const LoadingView())
+          ? (_loadError != null
+                ? ErrorView(message: _loadError!, onRetry: _load)
+                : const LoadingView())
           : _form(context, options),
     );
   }
@@ -148,7 +175,9 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: NoticeBox(
-              child: Text('Changing the correct answer re-marks every saved answer to this question, including in tests.'),
+              child: Text(
+                'Changing the correct answer re-marks every saved answer to this question, including in tests.',
+              ),
             ),
           ),
         InputDecorator(
@@ -158,7 +187,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
               isExpanded: true,
               isDense: true,
               value: exams.any((e) => e.str('code') == _exam) ? _exam : null,
-              items: [for (final e in exams) DropdownMenuItem(value: e.str('code'), child: Text(e.str('name')))],
+              items: [
+                for (final e in exams)
+                  DropdownMenuItem(
+                    value: e.str('code'),
+                    child: Text(e.str('name')),
+                  ),
+              ],
               onChanged: (v) => setState(() => _exam = v),
             ),
           ),
@@ -166,15 +201,35 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(flex: 2, child: TextField(controller: _topic, decoration: const InputDecoration(labelText: 'Topic / subject'))),
+            Expanded(
+              flex: 2,
+              child: TextField(
+                controller: _topic,
+                decoration: const InputDecoration(labelText: 'Topic / subject'),
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: TextField(controller: _year, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Year'))),
+            Expanded(
+              child: TextField(
+                controller: _year,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Year'),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
-        TextField(controller: _content, minLines: 2, maxLines: 8, decoration: const InputDecoration(labelText: 'Question')),
+        TextField(
+          controller: _content,
+          minLines: 2,
+          maxLines: 8,
+          decoration: const InputDecoration(labelText: 'Question'),
+        ),
         const SizedBox(height: 16),
-        Text('Options (tap the letter of the correct one)', style: text.titleSmall),
+        Text(
+          'Options (tap the letter of the correct one)',
+          style: text.titleSmall,
+        ),
         const SizedBox(height: 8),
         for (final letter in const ['A', 'B', 'C', 'D'])
           Padding(
@@ -190,15 +245,30 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                 Expanded(
                   child: TextField(
                     controller: _choices[letter],
-                    decoration: InputDecoration(labelText: 'Option $letter${_correct == letter ? ' (correct)' : ''}'),
+                    decoration: InputDecoration(
+                      labelText:
+                          'Option $letter${_correct == letter ? ' (correct)' : ''}',
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        TextField(controller: _explanation, minLines: 2, maxLines: 6, decoration: const InputDecoration(labelText: 'Explanation (optional)')),
+        TextField(
+          controller: _explanation,
+          minLines: 2,
+          maxLines: 6,
+          decoration: const InputDecoration(
+            labelText: 'Explanation (optional)',
+          ),
+        ),
         const SizedBox(height: 20),
-        AudienceEditor(options: options, value: _audience, forTest: false, onChanged: () => setState(() {})),
+        AudienceEditor(
+          options: options,
+          value: _audience,
+          forTest: false,
+          onChanged: () => setState(() {}),
+        ),
         const SizedBox(height: 24),
         FilledButton(
           onPressed: _saving ? null : _save,

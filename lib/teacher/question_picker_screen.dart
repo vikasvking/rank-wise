@@ -7,7 +7,11 @@ import '../widgets/common.dart';
 /// Pick questions for a test from every question this teacher may use.
 /// Returns the picked questions (as JSON) with Navigator.pop.
 class QuestionPickerScreen extends StatefulWidget {
-  const QuestionPickerScreen({super.key, this.exam, required this.alreadyPicked});
+  const QuestionPickerScreen({
+    super.key,
+    this.exam,
+    required this.alreadyPicked,
+  });
 
   final String? exam;
   final Set<int> alreadyPicked;
@@ -83,10 +87,14 @@ class _QuestionPickerScreenState extends State<QuestionPickerScreen> {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_picked.isEmpty ? 'Add questions' : '${_picked.length} picked'),
+        title: Text(
+          _picked.isEmpty ? 'Add questions' : '${_picked.length} picked',
+        ),
         actions: [
           TextButton(
-            onPressed: _picked.isEmpty ? null : () => Navigator.pop(context, _picked.values.toList()),
+            onPressed: _picked.isEmpty
+                ? null
+                : () => Navigator.pop(context, _picked.values.toList()),
             child: const Text('Add'),
           ),
         ],
@@ -102,7 +110,10 @@ class _QuestionPickerScreenState extends State<QuestionPickerScreen> {
               decoration: InputDecoration(
                 hintText: 'Search question text',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _reset),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: _reset,
+                ),
               ),
             ),
           ),
@@ -112,41 +123,65 @@ class _QuestionPickerScreenState extends State<QuestionPickerScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                FilterChip(label: const Text('Only mine'), selected: _mine, onSelected: (v) {
-                  _mine = v;
-                  _reset();
-                }),
+                FilterChip(
+                  label: const Text('Only mine'),
+                  selected: _mine,
+                  onSelected: (v) {
+                    _mine = v;
+                    _reset();
+                  },
+                ),
                 const SizedBox(width: 8),
                 if (_exam != null) ...[
-                  InputChip(label: Text('Exam: ${_exam!}'), onDeleted: () {
-                    _exam = null;
-                    _reset();
-                  }),
+                  InputChip(
+                    label: Text('Exam: ${_exam!}'),
+                    onDeleted: () {
+                      _exam = null;
+                      _reset();
+                    },
+                  ),
                   const SizedBox(width: 8),
                 ],
                 for (final t in _topics.take(30)) ...[
-                  ChoiceChip(label: Text(t), selected: _topic == t, onSelected: (on) {
-                    _topic = on ? t : null;
-                    _reset();
-                  }),
+                  ChoiceChip(
+                    label: Text(t),
+                    selected: _topic == t,
+                    onSelected: (on) {
+                      _topic = on ? t : null;
+                      _reset();
+                    },
+                  ),
                   const SizedBox(width: 8),
                 ],
               ],
             ),
           ),
-          if (_error != null) Padding(padding: const EdgeInsets.all(8), child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
           Expanded(
             child: NotificationListener<ScrollNotification>(
               onNotification: (n) {
-                if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) _loadMore();
+                if (n.metrics.pixels > n.metrics.maxScrollExtent - 300)
+                  _loadMore();
                 return false;
               },
               child: ListView.builder(
                 itemCount: _rows.length + 1,
                 itemBuilder: (context, i) {
                   if (i == _rows.length) {
-                    if (_loading) return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
-                    if (_rows.isEmpty) return const EmptyView('No questions match.');
+                    if (_loading)
+                      return const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    if (_rows.isEmpty)
+                      return const EmptyView('No questions match.');
                     return const SizedBox(height: 24);
                   }
                   final q = _rows[i];
@@ -156,12 +191,24 @@ class _QuestionPickerScreenState extends State<QuestionPickerScreen> {
                     value: already || _picked.containsKey(id),
                     onChanged: already
                         ? null
-                        : (on) => setState(() => on == true ? _picked[id] = q : _picked.remove(id)),
-                    title: Text(q.str('content'), maxLines: 3, overflow: TextOverflow.ellipsis),
+                        : (on) => setState(
+                            () => on == true
+                                ? _picked[id] = q
+                                : _picked.remove(id),
+                          ),
+                    title: Text(
+                      q.str('content'),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     subtitle: Text(
-                      [q.str('exam'), q.str('topic'), if (q.strOrNull('year') != null) q.str('year'), 'Answer ${q.str('correct_answer')}',
-                              if (already) 'already in test']
-                          .join(' · '),
+                      [
+                        q.str('exam'),
+                        q.str('topic'),
+                        if (q.strOrNull('year') != null) q.str('year'),
+                        'Answer ${q.str('correct_answer')}',
+                        if (already) 'already in test',
+                      ].join(' · '),
                       style: text.bodySmall,
                     ),
                   );

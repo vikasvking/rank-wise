@@ -16,7 +16,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final session = AppSession();
   // After signing out (or the token expiring), close every open screen
-  session.onSignedOut = () => navigatorKey.currentState?.popUntil((route) => route.isFirst);
+  session.onSignedOut = () =>
+      navigatorKey.currentState?.popUntil((route) => route.isFirst);
   session.restore();
   final theme = ThemeController()..load();
   runApp(RankwiseApp(session: session, theme: theme));
@@ -68,7 +69,11 @@ class AuthGate extends StatelessWidget {
     if (!session.signedIn) {
       final error = session.startupError;
       if (session.hasToken && error != null) {
-        return Scaffold(body: SafeArea(child: ErrorView(message: error, onRetry: session.retryStartup)));
+        return Scaffold(
+          body: SafeArea(
+            child: ErrorView(message: error, onRetry: session.retryStartup),
+          ),
+        );
       }
       return const LoginScreen();
     }

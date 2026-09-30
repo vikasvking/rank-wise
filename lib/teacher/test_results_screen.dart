@@ -27,12 +27,16 @@ class _TestResultsScreenState extends State<TestResultsScreen> {
     final ok = await confirmDialog(
       context,
       title: 'Let ${student.str('name')} continue?',
-      message: 'The time spent blocked is given back, but never beyond the closing time.',
+      message:
+          'The time spent blocked is given back, but never beyond the closing time.',
       confirmLabel: 'Reinstate',
     );
     if (!ok || !mounted) return;
     try {
-      final data = await AppScope.read(context).api.post('/teacher/tests/${widget.testId}/reinstate', {'attempt_id': student.integer('attempt_id')});
+      final data = await AppScope.read(context).api.post(
+        '/teacher/tests/${widget.testId}/reinstate',
+        {'attempt_id': student.integer('attempt_id')},
+      );
       if (!mounted) return;
       showSnack(context, data.str('message'));
       setState(() => _version++);
@@ -50,9 +54,16 @@ class _TestResultsScreenState extends State<TestResultsScreen> {
       builder: (context, data, reload) {
         final test = data.obj('test');
         final strict = test.flag('strict');
-        final results = _ResultsTab(data: data, onRefresh: reload, onReinstate: _reinstate);
+        final results = _ResultsTab(
+          data: data,
+          onRefresh: reload,
+          onReinstate: _reinstate,
+        );
         if (!strict) {
-          return Scaffold(appBar: AppBar(title: Text(test.str('title'))), body: results);
+          return Scaffold(
+            appBar: AppBar(title: Text(test.str('title'))),
+            body: results,
+          );
         }
         return DefaultTabController(
           length: 2,
@@ -60,7 +71,12 @@ class _TestResultsScreenState extends State<TestResultsScreen> {
           child: Scaffold(
             appBar: AppBar(
               title: Text(test.str('title')),
-              bottom: const TabBar(tabs: [Tab(text: 'Results'), Tab(text: '🔴 Live')]),
+              bottom: const TabBar(
+                tabs: [
+                  Tab(text: 'Results'),
+                  Tab(text: '🔴 Live'),
+                ],
+              ),
             ),
             body: TabBarView(
               children: [
@@ -76,7 +92,11 @@ class _TestResultsScreenState extends State<TestResultsScreen> {
 }
 
 class _ResultsTab extends StatelessWidget {
-  const _ResultsTab({required this.data, required this.onRefresh, required this.onReinstate});
+  const _ResultsTab({
+    required this.data,
+    required this.onRefresh,
+    required this.onReinstate,
+  });
 
   final J data;
   final Future<void> Function() onRefresh;
@@ -97,29 +117,58 @@ class _ResultsTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('${examName(test.obj('exam'))} · ${windowLabel(test)}', style: text.bodyMedium),
+          Text(
+            '${examName(test.obj('exam'))} · ${windowLabel(test)}',
+            style: text.bodyMedium,
+          ),
           if (pin != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: OutlinedButton.icon(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: pin));
-                  showSnack(context, 'PIN $pin copied — share it with your students');
+                  showSnack(
+                    context,
+                    'PIN $pin copied — share it with your students',
+                  );
                 },
                 icon: const Icon(Icons.copy),
-                label: Text('PIN $pin', style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w800)),
+                label: Text(
+                  'PIN $pin',
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ),
           const SizedBox(height: 12),
-          TileGrid(children: [
-            StatTile(label: 'Submitted', value: '${data.integer('participants')}'),
-            StatTile(label: 'Still writing', value: '${data.integer('in_progress')}'),
-            StatTile(label: 'Average marks', value: fmtNum(data.dbl('average_marks'))),
-            StatTile(label: 'Average score', value: '${fmtNum(data.dbl('average_pct'), decimals: 1)}%'),
-          ]),
+          TileGrid(
+            children: [
+              StatTile(
+                label: 'Submitted',
+                value: '${data.integer('participants')}',
+              ),
+              StatTile(
+                label: 'Still writing',
+                value: '${data.integer('in_progress')}',
+              ),
+              StatTile(
+                label: 'Average marks',
+                value: fmtNum(data.dbl('average_marks')),
+              ),
+              StatTile(
+                label: 'Average score',
+                value: '${fmtNum(data.dbl('average_pct'), decimals: 1)}%',
+              ),
+            ],
+          ),
           if (rating != null) ...[
             const SizedBox(height: 8),
-            Text('⭐ ${fmtNum(rating.dbl('average'), decimals: 1)} from ${rating.integer('count')} student ratings', style: text.bodySmall),
+            Text(
+              '⭐ ${fmtNum(rating.dbl('average'), decimals: 1)} from ${rating.integer('count')} student ratings',
+              style: text.bodySmall,
+            ),
           ],
           if (blocked.isNotEmpty) ...[
             const SectionTitle('🚫 Blocked students'),
@@ -129,10 +178,15 @@ class _ResultsTab extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   title: Text(b.str('name')),
-                  subtitle: Text('${b.str('reason')}\n${fmtDateTime(b.time('blocked_at'))}'),
+                  subtitle: Text(
+                    '${b.str('reason')}\n${fmtDateTime(b.time('blocked_at'))}',
+                  ),
                   isThreeLine: true,
                   trailing: b.flag('in_progress')
-                      ? FilledButton(onPressed: () => onReinstate(b), child: const Text('Reinstate'))
+                      ? FilledButton(
+                          onPressed: () => onReinstate(b),
+                          child: const Text('Reinstate'),
+                        )
                       : null,
                 ),
               ),
@@ -153,10 +207,18 @@ class _ResultsTab extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${fmtNum(r.dbl('marks'))} / ${fmtNum(r.dbl('max_marks'))}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(
+                      '${fmtNum(r.dbl('marks'))} / ${fmtNum(r.dbl('max_marks'))}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     Text(
                       '${fmtNum(r.dbl('percentage'), decimals: 1)}% ${r.flag('passed') ? 'pass' : 'fail'}',
-                      style: TextStyle(fontSize: 12, color: r.flag('passed') ? context.rw.success : context.rw.danger),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: r.flag('passed')
+                            ? context.rw.success
+                            : context.rw.danger,
+                      ),
                     ),
                   ],
                 ),
@@ -199,31 +261,36 @@ class _LiveTabState extends State<_LiveTab> {
 
   Future<void> _load() async {
     try {
-      final data = await AppScope.read(context).api.get('/teacher/tests/${widget.testId}/live');
-      if (mounted) setState(() {
-        _data = data;
-        _error = null;
-      });
+      final data = await AppScope.read(
+        context,
+      ).api.get('/teacher/tests/${widget.testId}/live');
+      if (mounted)
+        setState(() {
+          _data = data;
+          _error = null;
+        });
     } catch (e) {
       if (mounted) setState(() => _error = messageOf(e));
     }
   }
 
   static (String, Color) _label(Rw rw, String status) => switch (status) {
-        'writing' => ('🟢 Writing', rw.success),
-        'opening' => ('🟢 Opening test', rw.success),
-        'no_signal' => ('🟡 No signal', rw.warning),
-        'blocked' => ('🚫 Blocked', rw.danger),
-        'submitted' => ('✅ Submitted', rw.muted),
-        _ => (status, rw.faint),
-      };
+    'writing' => ('🟢 Writing', rw.success),
+    'opening' => ('🟢 Opening test', rw.success),
+    'no_signal' => ('🟡 No signal', rw.warning),
+    'blocked' => ('🚫 Blocked', rw.danger),
+    'submitted' => ('✅ Submitted', rw.muted),
+    _ => (status, rw.faint),
+  };
 
   @override
   Widget build(BuildContext context) {
     final data = _data;
     if (data == null) {
       final error = _error;
-      return error == null ? const LoadingView() : ErrorView(message: error, onRetry: _load);
+      return error == null
+          ? const LoadingView()
+          : ErrorView(message: error, onRetry: _load);
     }
     final counts = data.obj('counts');
     final rows = data.list('rows');
@@ -235,51 +302,108 @@ class _LiveTabState extends State<_LiveTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (!data.flag('live')) const NoticeBox(child: Text('This test has closed. The live view shows the final state.')),
-          Text('Updated ${fmtTime(data.time('refreshed_at'))} · refreshes every 15 seconds', style: text.bodySmall),
-          if (_error != null) Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          if (!data.flag('live'))
+            const NoticeBox(
+              child: Text(
+                'This test has closed. The live view shows the final state.',
+              ),
+            ),
+          Text(
+            'Updated ${fmtTime(data.time('refreshed_at'))} · refreshes every 15 seconds',
+            style: text.bodySmall,
+          ),
+          if (_error != null)
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           const SizedBox(height: 10),
-          TileGrid(columns: 3, children: [
-            StatTile(label: 'Writing', value: '${counts.integer('writing') + counts.integer('opening')}', color: context.rw.success, tone: StatTone.success),
-            StatTile(label: 'No signal', value: '${counts.integer('no_signal')}', color: context.rw.warning),
-            StatTile(label: 'Blocked', value: '${counts.integer('blocked')}', color: context.rw.danger, tone: StatTone.danger),
-            StatTile(label: 'Submitted', value: '${counts.integer('submitted')}'),
-            StatTile(label: 'Not started', value: '${counts.integer('not_started')}'),
-            StatTile(label: 'Questions', value: '${data.integer('total_questions')}'),
-          ]),
+          TileGrid(
+            columns: 3,
+            children: [
+              StatTile(
+                label: 'Writing',
+                value:
+                    '${counts.integer('writing') + counts.integer('opening')}',
+                color: context.rw.success,
+                tone: StatTone.success,
+              ),
+              StatTile(
+                label: 'No signal',
+                value: '${counts.integer('no_signal')}',
+                color: context.rw.warning,
+              ),
+              StatTile(
+                label: 'Blocked',
+                value: '${counts.integer('blocked')}',
+                color: context.rw.danger,
+                tone: StatTone.danger,
+              ),
+              StatTile(
+                label: 'Submitted',
+                value: '${counts.integer('submitted')}',
+              ),
+              StatTile(
+                label: 'Not started',
+                value: '${counts.integer('not_started')}',
+              ),
+              StatTile(
+                label: 'Questions',
+                value: '${data.integer('total_questions')}',
+              ),
+            ],
+          ),
           const SectionTitle('Students'),
           if (rows.isEmpty) const EmptyView('Nobody has started yet.'),
           for (final r in rows)
-            Builder(builder: (context) {
-              final label = _label(context.rw, r.str('status'));
-              final details = <String>[
-                '${r.integer('answered')} of ${data.integer('total_questions')} answered',
-                if (r.integer('leave_count') > 0) '${r.integer('leave_count')} warning(s)',
-                if (r.str('status') == 'no_signal') 'silent ${fmtDuration(r.intOrNull('seconds_silent'))}',
-                if (r.intOrNull('seconds_left') != null && r.str('status') != 'submitted') '${fmtDuration(r.intOrNull('seconds_left'))} left',
-                if (r.str('status') == 'blocked') r.str('block_reason'),
-              ];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text(r.str('name')),
-                  subtitle: Text(details.join(' · ')),
-                  trailing: r.str('status') == 'blocked'
-                      ? FilledButton(
-                          onPressed: () async {
-                            await widget.onReinstate(r);
-                            _load();
-                          },
-                          child: const Text('Reinstate'),
-                        )
-                      : Text(label.$1, style: TextStyle(color: label.$2, fontWeight: FontWeight.w700)),
-                ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final label = _label(context.rw, r.str('status'));
+                final details = <String>[
+                  '${r.integer('answered')} of ${data.integer('total_questions')} answered',
+                  if (r.integer('leave_count') > 0)
+                    '${r.integer('leave_count')} warning(s)',
+                  if (r.str('status') == 'no_signal')
+                    'silent ${fmtDuration(r.intOrNull('seconds_silent'))}',
+                  if (r.intOrNull('seconds_left') != null &&
+                      r.str('status') != 'submitted')
+                    '${fmtDuration(r.intOrNull('seconds_left'))} left',
+                  if (r.str('status') == 'blocked') r.str('block_reason'),
+                ];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(r.str('name')),
+                    subtitle: Text(details.join(' · ')),
+                    trailing: r.str('status') == 'blocked'
+                        ? FilledButton(
+                            onPressed: () async {
+                              await widget.onReinstate(r);
+                              _load();
+                            },
+                            child: const Text('Reinstate'),
+                          )
+                        : Text(
+                            label.$1,
+                            style: TextStyle(
+                              color: label.$2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                );
+              },
+            ),
           if (notStarted.isNotEmpty) ...[
             const SectionTitle('Entered the PIN, not started'),
             for (final n in notStarted)
-              ListTile(dense: true, title: Text(n.str('name')), subtitle: Text('PIN entered ${fmtTime(n.time('pin_entered_at'))}')),
+              ListTile(
+                dense: true,
+                title: Text(n.str('name')),
+                subtitle: Text(
+                  'PIN entered ${fmtTime(n.time('pin_entered_at'))}',
+                ),
+              ),
           ],
         ],
       ),

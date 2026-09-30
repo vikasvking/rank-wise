@@ -70,15 +70,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 56,
                         height: 56,
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(color: rw.button, borderRadius: BorderRadius.circular(16)),
-                        child: const Text('R', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w600)),
+                        decoration: BoxDecoration(
+                          color: rw.button,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Text(
+                          'R',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Rankwise', textAlign: TextAlign.center, style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w600, color: rw.strong, letterSpacing: -0.5)),
+                    Text(
+                      'Rankwise',
+                      textAlign: TextAlign.center,
+                      style: text.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: rw.strong,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    Text('Tests, practice and ranks for UPSC, JEE, NEET, SSC, IBPS and CBSE',
-                        textAlign: TextAlign.center, style: TextStyle(color: rw.muted)),
+                    Text(
+                      'Tests, practice and ranks for UPSC, JEE, NEET, SSC, IBPS and CBSE',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: rw.muted),
+                    ),
                     const SizedBox(height: 28),
                     if (notice != null) ...[
                       NoticeBox(tone: NoticeTone.warning, child: Text(notice)),
@@ -89,7 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'Email address', prefixIcon: Icon(Icons.mail_outline)),
+                      decoration: const InputDecoration(
+                        labelText: 'Email address',
+                        prefixIcon: Icon(Icons.mail_outline),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
@@ -102,27 +126,52 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_hide ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                          icon: Icon(
+                            _hide
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
                           onPressed: () => setState(() => _hide = !_hide),
                         ),
                       ),
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 12),
-                      Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: _busy ? null : _signIn,
-                      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
                       child: _busy
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : const Text('Sign in'),
                     ),
                     const SizedBox(height: 8),
-                    TextButton(onPressed: () => openWebsite(context, '/passwords/new'), child: const Text('Forgot password?')),
+                    TextButton(
+                      onPressed: () => openWebsite(context, '/passwords/new'),
+                      child: const Text('Forgot password?'),
+                    ),
                     const Divider(height: 32),
-                    Text('New to Rankwise?', textAlign: TextAlign.center, style: text.bodyMedium),
+                    Text(
+                      'New to Rankwise?',
+                      textAlign: TextAlign.center,
+                      style: text.bodyMedium,
+                    ),
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: () => openWebsite(context, '/sign_up'),

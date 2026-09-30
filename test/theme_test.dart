@@ -23,26 +23,35 @@ void main() {
     expect(light.extension<Rw>()!.card, Tw.white);
     expect(dark.extension<Rw>()!.card, Tw.slate900);
     // filled buttons are brand-700 in both themes
-    expect(light.filledButtonTheme.style!.backgroundColor!.resolve(<WidgetState>{}), Ramp.rose.s700);
-    expect(dark.filledButtonTheme.style!.backgroundColor!.resolve(<WidgetState>{}), Ramp.rose.s700);
+    expect(
+      light.filledButtonTheme.style!.backgroundColor!.resolve(<WidgetState>{}),
+      Ramp.rose.s700,
+    );
+    expect(
+      dark.filledButtonTheme.style!.backgroundColor!.resolve(<WidgetState>{}),
+      Ramp.rose.s700,
+    );
   });
 
-  test('the light / dark choice is remembered; System is the default', () async {
-    SharedPreferences.setMockInitialValues({});
-    final first = ThemeController();
-    await first.load();
-    expect(first.mode, ThemeMode.system);
+  test(
+    'the light / dark choice is remembered; System is the default',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final first = ThemeController();
+      await first.load();
+      expect(first.mode, ThemeMode.system);
 
-    await first.toggle(Brightness.light);
-    expect(first.mode, ThemeMode.dark);
+      await first.toggle(Brightness.light);
+      expect(first.mode, ThemeMode.dark);
 
-    final again = ThemeController();
-    await again.load();
-    expect(again.mode, ThemeMode.dark);
+      final again = ThemeController();
+      await again.load();
+      expect(again.mode, ThemeMode.dark);
 
-    await again.setMode(ThemeMode.system);
-    final third = ThemeController();
-    await third.load();
-    expect(third.mode, ThemeMode.system);
-  });
+      await again.setMode(ThemeMode.system);
+      final third = ThemeController();
+      await third.load();
+      expect(third.mode, ThemeMode.system);
+    },
+  );
 }

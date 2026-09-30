@@ -113,7 +113,14 @@ class Rw extends ThemeExtension<Rw> {
   final Color brandFg, brandSoft;
 
   /// Right / wrong / attention / information, each with its pale background.
-  final Color success, successBg, danger, dangerBg, warning, warningBg, info, infoBg;
+  final Color success,
+      successBg,
+      danger,
+      dangerBg,
+      warning,
+      warningBg,
+      info,
+      infoBg;
 
   /// Grey chips ("Closed", "Available any time").
   final Color neutralBg, neutralFg;
@@ -131,7 +138,8 @@ class Rw extends ThemeExtension<Rw> {
   Rw copyWith() => this;
 
   @override
-  Rw lerp(ThemeExtension<Rw>? other, double t) => (other is Rw && t >= 0.5) ? other : this;
+  Rw lerp(ThemeExtension<Rw>? other, double t) =>
+      (other is Rw && t >= 0.5) ? other : this;
 }
 
 extension RwContext on BuildContext {
@@ -149,7 +157,14 @@ TestKind kindOfTest(J test) {
 }
 
 class KindStyle {
-  const KindStyle({required this.label, required this.icon, required this.stripe, required this.badgeBg, required this.badgeFg, required this.button});
+  const KindStyle({
+    required this.label,
+    required this.icon,
+    required this.stripe,
+    required this.badgeBg,
+    required this.badgeFg,
+    required this.button,
+  });
 
   final String label;
   final IconData icon;
@@ -162,29 +177,29 @@ KindStyle kindStyle(BuildContext context, TestKind kind) {
   final dark = context.rw.dark;
   return switch (kind) {
     TestKind.strict => KindStyle(
-        label: 'Strict',
-        icon: Icons.shield_outlined,
-        stripe: Tw.red600,
-        badgeBg: dark ? _tint(Tw.red950) : Tw.red50,
-        badgeFg: dark ? Tw.red300 : Tw.red700,
-        button: Tw.red700,
-      ),
+      label: 'Strict',
+      icon: Icons.shield_outlined,
+      stripe: Tw.red600,
+      badgeBg: dark ? _tint(Tw.red950) : Tw.red50,
+      badgeFg: dark ? Tw.red300 : Tw.red700,
+      button: Tw.red700,
+    ),
     TestKind.pin => KindStyle(
-        label: 'PIN',
-        icon: Icons.lock_outline,
-        stripe: Tw.sky600,
-        badgeBg: dark ? _tint(Tw.sky950) : Tw.sky50,
-        badgeFg: dark ? Tw.sky300 : Tw.sky700,
-        button: Tw.sky700,
-      ),
+      label: 'PIN',
+      icon: Icons.lock_outline,
+      stripe: Tw.sky600,
+      badgeBg: dark ? _tint(Tw.sky950) : Tw.sky50,
+      badgeFg: dark ? Tw.sky300 : Tw.sky700,
+      button: Tw.sky700,
+    ),
     TestKind.open => KindStyle(
-        label: 'Open to all',
-        icon: Icons.public,
-        stripe: Tw.emerald600,
-        badgeBg: dark ? _tint(Tw.emerald950) : Tw.emerald50,
-        badgeFg: dark ? Tw.emerald300 : Tw.emerald700,
-        button: Tw.emerald700,
-      ),
+      label: 'Open to all',
+      icon: Icons.public,
+      stripe: Tw.emerald600,
+      badgeBg: dark ? _tint(Tw.emerald950) : Tw.emerald50,
+      badgeFg: dark ? Tw.emerald300 : Tw.emerald700,
+      button: Tw.emerald700,
+    ),
   };
 }
 
@@ -241,15 +256,24 @@ ThemeData buildTheme(Brightness brightness, Ramp brand) {
   final base = ThemeData(useMaterial3: true, colorScheme: scheme);
   var text = base.textTheme.apply(bodyColor: rw.body, displayColor: rw.strong);
   text = text.copyWith(
-    headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.3),
-    titleLarge: text.titleLarge?.copyWith(color: rw.strong, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+    headlineSmall: text.headlineSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.3,
+    ),
+    titleLarge: text.titleLarge?.copyWith(
+      color: rw.strong,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.2,
+    ),
     titleMedium: text.titleMedium?.copyWith(color: rw.strong),
     titleSmall: text.titleSmall?.copyWith(color: rw.strong),
     bodySmall: text.bodySmall?.copyWith(color: rw.muted),
     labelSmall: text.labelSmall?.copyWith(color: rw.muted),
   );
   const semibold = TextStyle(fontWeight: FontWeight.w600);
-  final rounded = RoundedRectangleBorder(borderRadius: BorderRadius.circular(10));
+  final rounded = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(10),
+  );
   final fieldBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(10),
     borderSide: BorderSide(color: dark ? Tw.slate700 : Tw.slate300),
@@ -274,7 +298,10 @@ ThemeData buildTheme(Brightness brightness, Ramp brand) {
       color: rw.card,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: rw.border)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: rw.border),
+      ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -294,8 +321,16 @@ ThemeData buildTheme(Brightness brightness, Ramp brand) {
         textStyle: semibold,
       ),
     ),
-    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: rw.brandFg, textStyle: semibold)),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(backgroundColor: rw.button, foregroundColor: Tw.white),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: rw.brandFg,
+        textStyle: semibold,
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: rw.button,
+      foregroundColor: Tw.white,
+    ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: rw.card,
       surfaceTintColor: Colors.transparent,
@@ -303,11 +338,17 @@ ThemeData buildTheme(Brightness brightness, Ramp brand) {
       height: 66,
       indicatorColor: rw.brandSoft,
       iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? rw.brandFg : rw.muted),
+        (states) => IconThemeData(
+          color: states.contains(WidgetState.selected) ? rw.brandFg : rw.muted,
+        ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
-        return TextStyle(fontSize: 12, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: selected ? rw.brandFg : rw.muted);
+        return TextStyle(
+          fontSize: 12,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          color: selected ? rw.brandFg : rw.muted,
+        );
       }),
     ),
     inputDecorationTheme: InputDecorationThemeData(
@@ -315,7 +356,12 @@ ThemeData buildTheme(Brightness brightness, Ramp brand) {
       fillColor: rw.card,
       border: fieldBorder,
       enabledBorder: fieldBorder,
-      focusedBorder: fieldBorder.copyWith(borderSide: BorderSide(color: dark ? brand.s400 : brand.s600, width: 1.6)),
+      focusedBorder: fieldBorder.copyWith(
+        borderSide: BorderSide(
+          color: dark ? brand.s400 : brand.s600,
+          width: 1.6,
+        ),
+      ),
     ),
     chipTheme: ChipThemeData(
       backgroundColor: rw.card,
@@ -355,7 +401,11 @@ class ThemeController extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    _mode = switch (prefs.getString(_key)) { 'light' => ThemeMode.light, 'dark' => ThemeMode.dark, _ => ThemeMode.system };
+    _mode = switch (prefs.getString(_key)) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };
     notifyListeners();
   }
 
@@ -372,16 +422,23 @@ class ThemeController extends ChangeNotifier {
   }
 
   /// The sun / moon button: switch to the opposite of what is on screen now.
-  Future<void> toggle(Brightness onScreen) => setMode(onScreen == Brightness.dark ? ThemeMode.light : ThemeMode.dark);
+  Future<void> toggle(Brightness onScreen) =>
+      setMode(onScreen == Brightness.dark ? ThemeMode.light : ThemeMode.dark);
 }
 
 /// Makes the [ThemeController] available to every screen.
 class ThemeScope extends InheritedNotifier<ThemeController> {
-  const ThemeScope({super.key, required ThemeController controller, required super.child}) : super(notifier: controller);
+  const ThemeScope({
+    super.key,
+    required ThemeController controller,
+    required super.child,
+  }) : super(notifier: controller);
 
   /// Rebuilds the caller when the setting changes.
-  static ThemeController of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<ThemeScope>()!.notifier!;
+  static ThemeController of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ThemeScope>()!.notifier!;
 
   /// Reads the controller without rebuilding (for button handlers).
-  static ThemeController read(BuildContext context) => context.getInheritedWidgetOfExactType<ThemeScope>()!.notifier!;
+  static ThemeController read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<ThemeScope>()!.notifier!;
 }

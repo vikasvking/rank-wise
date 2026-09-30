@@ -73,7 +73,9 @@ class _QuestionsTabState extends State<QuestionsTab> {
   Future<void> _open([J? question]) async {
     final saved = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => QuestionEditorScreen(question: question)),
+      MaterialPageRoute(
+        builder: (_) => QuestionEditorScreen(question: question),
+      ),
     );
     if (saved == true && mounted) _reset();
   }
@@ -90,22 +92,40 @@ class _QuestionsTabState extends State<QuestionsTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${q.str('exam')} · ${q.str('topic')} · by ${q.str('author')}', style: Theme.of(ctx).textTheme.labelMedium),
+              Text(
+                '${q.str('exam')} · ${q.str('topic')} · by ${q.str('author')}',
+                style: Theme.of(ctx).textTheme.labelMedium,
+              ),
               const SizedBox(height: 8),
-              Text(q.str('content'), style: Theme.of(ctx).textTheme.titleMedium),
+              Text(
+                q.str('content'),
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               for (final letter in const ['A', 'B', 'C', 'D'])
                 if (options.str(letter).isNotEmpty)
-                  Text('$letter. ${options.str(letter)}${letter == q.str('correct_answer') ? '  ✓' : ''}',
-                      style: TextStyle(fontWeight: letter == q.str('correct_answer') ? FontWeight.w700 : null)),
+                  Text(
+                    '$letter. ${options.str(letter)}${letter == q.str('correct_answer') ? '  ✓' : ''}',
+                    style: TextStyle(
+                      fontWeight: letter == q.str('correct_answer')
+                          ? FontWeight.w700
+                          : null,
+                    ),
+                  ),
               if (q.str('explanation').isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(q.str('explanation')),
               ],
               const SizedBox(height: 8),
-              Text('Visible to: ${q.str('audience')}', style: Theme.of(ctx).textTheme.bodySmall),
+              Text(
+                'Visible to: ${q.str('audience')}',
+                style: Theme.of(ctx).textTheme.bodySmall,
+              ),
               if (!q.flag('editable'))
-                Text('Only the teacher who added it (or an admin) can edit it.', style: Theme.of(ctx).textTheme.bodySmall),
+                Text(
+                  'Only the teacher who added it (or an admin) can edit it.',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
             ],
           ),
         ),
@@ -127,7 +147,11 @@ class _QuestionsTabState extends State<QuestionsTab> {
           const ThemeToggleButton(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(onPressed: () => _open(), icon: const Icon(Icons.add), label: const Text('Add question')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _open(),
+        icon: const Icon(Icons.add),
+        label: const Text('Add question'),
+      ),
       body: Column(
         children: [
           Padding(
@@ -139,7 +163,10 @@ class _QuestionsTabState extends State<QuestionsTab> {
               decoration: InputDecoration(
                 hintText: 'Search question text',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _reset),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: _reset,
+                ),
               ),
             ),
           ),
@@ -173,13 +200,20 @@ class _QuestionsTabState extends State<QuestionsTab> {
             ),
           ),
           if (_error != null)
-            Padding(padding: const EdgeInsets.all(8), child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => _reset(),
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
-                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) _loadMore();
+                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300)
+                    _loadMore();
                   return false;
                 },
                 child: ListView.builder(
@@ -188,20 +222,38 @@ class _QuestionsTabState extends State<QuestionsTab> {
                   itemCount: _rows.length + 1,
                   itemBuilder: (context, i) {
                     if (i == _rows.length) {
-                      if (_loading) return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
-                      if (_rows.isEmpty) return EmptyView(_mine ? 'You have not added questions yet.' : 'No questions match.');
+                      if (_loading)
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      if (_rows.isEmpty)
+                        return EmptyView(
+                          _mine
+                              ? 'You have not added questions yet.'
+                              : 'No questions match.',
+                        );
                       return const SizedBox(height: 24);
                     }
                     final q = _rows[i];
                     return ListTile(
-                      title: Text(q.str('content'), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: Text([
-                        q.str('exam'),
-                        q.str('topic'),
-                        'Answer ${q.str('correct_answer')}',
-                        if (q.str('visibility') != 'public') q.str('audience'),
-                      ].join(' · ')),
-                      trailing: q.flag('editable') ? const Icon(Icons.edit_outlined) : null,
+                      title: Text(
+                        q.str('content'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        [
+                          q.str('exam'),
+                          q.str('topic'),
+                          'Answer ${q.str('correct_answer')}',
+                          if (q.str('visibility') != 'public')
+                            q.str('audience'),
+                        ].join(' · '),
+                      ),
+                      trailing: q.flag('editable')
+                          ? const Icon(Icons.edit_outlined)
+                          : null,
                       onTap: () {
                         if (q.flag('editable')) {
                           _open(q);

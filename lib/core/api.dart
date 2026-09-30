@@ -9,7 +9,8 @@ import 'json.dart';
 /// An error from the Rankwise API. [code] is machine-readable ("pin_required", "blocked"...),
 /// [message] is ready to show to the user.
 class ApiException implements Exception {
-  ApiException(this.status, this.code, this.message, [J? body]) : body = body ?? <String, dynamic>{};
+  ApiException(this.status, this.code, this.message, [J? body])
+    : body = body ?? <String, dynamic>{};
 
   final int status;
   final String code;
@@ -32,17 +33,29 @@ class ApiClient {
     final params = <String, String>{
       if (query != null)
         for (final e in query.entries)
-          if (e.value != null && e.value.toString().isNotEmpty) e.key: e.value.toString(),
+          if (e.value != null && e.value.toString().isNotEmpty)
+            e.key: e.value.toString(),
     };
-    return base.replace(path: '/api/v1$path', queryParameters: params.isEmpty ? null : params);
+    return base.replace(
+      path: '/api/v1$path',
+      queryParameters: params.isEmpty ? null : params,
+    );
   }
 
-  Future<J> get(String path, [Map<String, dynamic>? query]) => _send('GET', path, query: query);
-  Future<J> post(String path, [J? body]) => _send('POST', path, body: body ?? <String, dynamic>{});
-  Future<J> patch(String path, [J? body]) => _send('PATCH', path, body: body ?? <String, dynamic>{});
+  Future<J> get(String path, [Map<String, dynamic>? query]) =>
+      _send('GET', path, query: query);
+  Future<J> post(String path, [J? body]) =>
+      _send('POST', path, body: body ?? <String, dynamic>{});
+  Future<J> patch(String path, [J? body]) =>
+      _send('PATCH', path, body: body ?? <String, dynamic>{});
   Future<J> delete(String path) => _send('DELETE', path);
 
-  Future<J> _send(String method, String path, {Map<String, dynamic>? query, J? body}) async {
+  Future<J> _send(
+    String method,
+    String path, {
+    Map<String, dynamic>? query,
+    J? body,
+  }) async {
     final request = http.Request(method, uri(path, query));
     request.headers['Accept'] = 'application/json';
     request.headers['Content-Type'] = 'application/json';
@@ -55,9 +68,17 @@ class ApiClient {
       final streamed = await request.send().timeout(kRequestTimeout);
       res = await http.Response.fromStream(streamed).timeout(kRequestTimeout);
     } on TimeoutException {
-      throw ApiException(0, 'timeout', 'Rankwise is taking too long to answer. It may be waking up; please try again.');
+      throw ApiException(
+        0,
+        'timeout',
+        'Rankwise is taking too long to answer. It may be waking up; please try again.',
+      );
     } catch (_) {
-      throw ApiException(0, 'offline', 'Could not reach Rankwise. Check your internet connection and try again.');
+      throw ApiException(
+        0,
+        'offline',
+        'Could not reach Rankwise. Check your internet connection and try again.',
+      );
     }
 
     J data = <String, dynamic>{};
@@ -75,7 +96,9 @@ class ApiClient {
     final code = error.str('code', 'http_${res.statusCode}');
     final message = error.str(
       'message',
-      res.statusCode >= 500 ? 'Something went wrong on the server. Please try again.' : 'Request failed (${res.statusCode}).',
+      res.statusCode >= 500
+          ? 'Something went wrong on the server. Please try again.'
+          : 'Request failed (${res.statusCode}).',
     );
     if (res.statusCode == 401 && t != null) onUnauthorized?.call();
     throw ApiException(res.statusCode, code, message, data);

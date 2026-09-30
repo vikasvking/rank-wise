@@ -1,4 +1,17 @@
-const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 String _two(int n) => n.toString().padLeft(2, '0');
 
@@ -9,10 +22,12 @@ String fmtDateTime(DateTime? t) {
 }
 
 /// "5 Oct 2026"
-String fmtDate(DateTime? t) => t == null ? '—' : '${t.day} ${_months[t.month - 1]} ${t.year}';
+String fmtDate(DateTime? t) =>
+    t == null ? '—' : '${t.day} ${_months[t.month - 1]} ${t.year}';
 
 /// "10:00"
-String fmtTime(DateTime? t) => t == null ? '—' : '${_two(t.hour)}:${_two(t.minute)}';
+String fmtTime(DateTime? t) =>
+    t == null ? '—' : '${_two(t.hour)}:${_two(t.minute)}';
 
 /// 754 -> "12m 34s", 3700 -> "1h 1m"
 String fmtDuration(int? seconds) {

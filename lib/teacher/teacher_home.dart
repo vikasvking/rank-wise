@@ -23,20 +23,35 @@ class _TeacherHomeState extends State<TeacherHome> {
     return Scaffold(
       body: IndexedStack(
         index: _index,
-        children: [for (var i = 0; i < tabs.length; i++) _visited.contains(i) ? tabs[i] : const SizedBox.shrink()],
+        children: [
+          for (var i = 0; i < tabs.length; i++)
+            _visited.contains(i) ? tabs[i] : const SizedBox.shrink(),
+        ],
       ),
       bottomNavigationBar: BrandNavBar(
         child: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() {
-          _index = i;
-          _visited.add(i);
-        }),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.assignment_outlined), selectedIcon: Icon(Icons.assignment), label: 'Tests'),
-          NavigationDestination(icon: Icon(Icons.quiz_outlined), selectedIcon: Icon(Icons.quiz), label: 'Questions'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Me'),
-        ],
+          selectedIndex: _index,
+          onDestinationSelected: (i) => setState(() {
+            _index = i;
+            _visited.add(i);
+          }),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.assignment_outlined),
+              selectedIcon: Icon(Icons.assignment),
+              label: 'Tests',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.quiz_outlined),
+              selectedIcon: Icon(Icons.quiz),
+              label: 'Questions',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Me',
+            ),
+          ],
         ),
       ),
     );
