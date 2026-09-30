@@ -34,8 +34,9 @@ class ResultScreen extends StatelessWidget {
         ),
       );
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         await showMessageDialog(context, 'Cannot retake', messageOf(e));
+      }
     }
   }
 

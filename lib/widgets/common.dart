@@ -77,8 +77,9 @@ Future<void> openWebsite(BuildContext context, String path) async {
     Uri.parse('$kSiteUrl$path'),
     mode: LaunchMode.externalApplication,
   );
-  if (!ok && context.mounted)
+  if (!ok && context.mounted) {
     showSnack(context, 'Could not open $kSiteUrl$path');
+  }
 }
 
 class LoadingView extends StatefulWidget {
@@ -217,8 +218,9 @@ class _LoaderState<T> extends State<Loader<T>> {
   Widget build(BuildContext context) {
     if (!_hasData) {
       final error = _error;
-      if (error != null)
+      if (error != null) {
         return ErrorView(message: messageOf(error), onRetry: () => _run());
+      }
       return const LoadingView();
     }
     return widget.builder(context, _data as T, () => _run());
@@ -481,7 +483,7 @@ class SectionTitle extends StatelessWidget {
               ),
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

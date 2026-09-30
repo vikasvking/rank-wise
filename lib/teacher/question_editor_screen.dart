@@ -88,13 +88,16 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
   }
 
   String? _problem() {
-    if (_topic.text.trim().isEmpty)
+    if (_topic.text.trim().isEmpty) {
       return 'Add a topic (subject), e.g. Physics.';
+    }
     if (_content.text.trim().isEmpty) return 'Write the question.';
-    if (_choices.values.where((c) => c.text.trim().isNotEmpty).length < 2)
+    if (_choices.values.where((c) => c.text.trim().isNotEmpty).length < 2) {
       return 'Add at least two options.';
-    if (_choices[_correct]!.text.trim().isEmpty)
+    }
+    if (_choices[_correct]!.text.trim().isEmpty) {
       return 'The correct answer ($_correct) has no text.';
+    }
     return _audience.problem(forTest: false);
   }
 
@@ -132,12 +135,13 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
       final warning = data.strOrNull('warning');
       showSnack(
         context,
-        [data.str('message', 'Saved.'), if (warning != null) warning].join(' '),
+        [data.str('message', 'Saved.'), ?warning].join(' '),
       );
       Navigator.pop(context, true);
     } on ApiException catch (e) {
-      if (mounted)
+      if (mounted) {
         await showMessageDialog(context, 'Could not save', e.message);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

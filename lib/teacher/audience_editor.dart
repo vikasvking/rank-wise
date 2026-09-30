@@ -45,8 +45,9 @@ class AudienceValue {
 
   /// A problem to show before saving, or null.
   String? problem({required bool forTest}) {
-    if (visibility == 'institution' && institutionId == null)
+    if (visibility == 'institution' && institutionId == null) {
       return 'Pick which school or coaching can see it.';
+    }
     if (visibility == 'selected' &&
         batchIds.isEmpty &&
         userIds.isEmpty &&

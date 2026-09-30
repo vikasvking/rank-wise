@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/core/format.dart';
-import '../lib/core/json.dart';
+import 'package:upsc_questions_app/core/format.dart';
+import 'package:upsc_questions_app/core/json.dart';
 
 void main() {
   test('JSON readers never crash on missing or odd values', () {

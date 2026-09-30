@@ -112,16 +112,20 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
   String? _problem() {
     if (_title.text.trim().isEmpty) return 'Give the test a title.';
     if (_exam == null) return 'Pick an exam.';
-    if ((int.tryParse(_duration.text) ?? 0) <= 0)
+    if ((int.tryParse(_duration.text) ?? 0) <= 0) {
       return 'Duration must be at least 1 minute.';
+    }
     final pass = int.tryParse(_passMark.text);
-    if (pass == null || pass < 0 || pass > 100)
+    if (pass == null || pass < 0 || pass > 100) {
       return 'Pass mark must be between 0 and 100.';
-    if (_startsAt != null && _endsAt != null && !_endsAt!.isAfter(_startsAt!))
+    }
+    if (_startsAt != null && _endsAt != null && !_endsAt!.isAfter(_startsAt!)) {
       return 'The closing time must be after the opening time.';
+    }
     if (_strict && _access != 'pin') return 'Strict mode needs PIN access.';
-    if (_strict && _endsAt == null)
+    if (_strict && _endsAt == null) {
       return 'Strict mode needs a closing time (results are shown after it).';
+    }
     if (_questions.isEmpty) return 'Add at least one question.';
     return _audience.problem(forTest: true);
   }
@@ -159,12 +163,13 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
       await showMessageDialog(
         context,
         _editing ? 'Saved' : 'Test created',
-        [data.str('message'), if (warning != null) warning].join('\n\n'),
+        [data.str('message'), ?warning].join('\n\n'),
       );
       if (mounted) Navigator.pop(context, true);
     } on ApiException catch (e) {
-      if (mounted)
+      if (mounted) {
         await showMessageDialog(context, 'Could not save', e.message);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -180,8 +185,9 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
         ),
       ),
     );
-    if (picked != null && picked.isNotEmpty && mounted)
+    if (picked != null && picked.isNotEmpty && mounted) {
       setState(() => _questions = [..._questions, ...picked]);
+    }
   }
 
   @override

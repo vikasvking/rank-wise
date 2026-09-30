@@ -212,8 +212,9 @@ class _QuestionsTabState extends State<QuestionsTab> {
               onRefresh: () async => _reset(),
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
-                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300)
+                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) {
                     _loadMore();
+                  }
                   return false;
                 },
                 child: ListView.builder(
@@ -222,17 +223,19 @@ class _QuestionsTabState extends State<QuestionsTab> {
                   itemCount: _rows.length + 1,
                   itemBuilder: (context, i) {
                     if (i == _rows.length) {
-                      if (_loading)
+                      if (_loading) {
                         return const Padding(
                           padding: EdgeInsets.all(24),
                           child: Center(child: CircularProgressIndicator()),
                         );
-                      if (_rows.isEmpty)
+                      }
+                      if (_rows.isEmpty) {
                         return EmptyView(
                           _mine
                               ? 'You have not added questions yet.'
                               : 'No questions match.',
                         );
+                      }
                       return const SizedBox(height: 24);
                     }
                     final q = _rows[i];

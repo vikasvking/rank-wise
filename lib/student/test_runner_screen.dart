@@ -253,8 +253,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   // ---------- strict mode ----------
 
   Future<void> _sendHeartbeat() async {
-    if (_done || _leftAt != null)
+    if (_done || _leftAt != null) {
       return; // no heartbeats while the app is in the background
+    }
     try {
       final data = await AppScope.read(context).api.post('$_base/heartbeat');
       if (mounted) _applyStrictState(data);

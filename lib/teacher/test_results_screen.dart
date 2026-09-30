@@ -264,11 +264,12 @@ class _LiveTabState extends State<_LiveTab> {
       final data = await AppScope.read(
         context,
       ).api.get('/teacher/tests/${widget.testId}/live');
-      if (mounted)
+      if (mounted) {
         setState(() {
           _data = data;
           _error = null;
         });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = messageOf(e));
     }

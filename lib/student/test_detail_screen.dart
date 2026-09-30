@@ -60,7 +60,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           MaterialPageRoute(builder: (_) => ResultScreen(token: token)),
         );
       } else {
-        if (retake)
+        if (retake) {
           showSnack(
             context,
             data.str(
@@ -68,6 +68,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               'Retake started. Your rank stays from your first attempt.',
             ),
           );
+        }
         await Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => TestRunnerScreen(token: token)),
