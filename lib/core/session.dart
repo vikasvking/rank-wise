@@ -29,6 +29,9 @@ class AppSession extends ChangeNotifier {
   /// Called after signing out, to close any open screens.
   VoidCallback? onSignedOut;
 
+  /// Runs before signing out, while the API token still works (the phone leaves push notifications).
+  Future<void> Function()? beforeSignOut;
+
   bool get hasToken => api.token != null;
   bool get signedIn => user != null;
   bool get isStudent => user?.str('role') == 'student';
@@ -87,6 +90,11 @@ class AppSession extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    try {
+      await beforeSignOut?.call();
+    } catch (_) {
+      // never blocks signing out
+    }
     try {
       await api.delete('/session');
     } catch (_) {

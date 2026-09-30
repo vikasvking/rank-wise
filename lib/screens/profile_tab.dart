@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../student/history_screen.dart';
 import '../student/membership_screen.dart';
 import '../widgets/common.dart';
+import 'notification_settings.dart';
 import 'profile_edit_screen.dart';
 
 /// "Me" tab for students and teachers.
@@ -103,6 +104,10 @@ class ProfileTab extends StatelessWidget {
                 ],
               ),
             ),
+            if (student) ...[
+              const SizedBox(height: 12),
+              const NotificationSettingsCard(),
+            ],
             const SizedBox(height: 12),
             Card(
               child: Column(

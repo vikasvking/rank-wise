@@ -70,3 +70,20 @@ the second blocks. If the app is closed, the pings stop and the student is block
 
 A submitted test can be retaken as often as the student likes (needs the Rails side from `rankwise-retakes.patch`).
 Tests with a closing time can be retaken only after they close. Retakes are practice: only the first attempt is ranked.
+
+## Push notifications (Firebase)
+
+Students get: new tests from their teachers / for their exams, "Results are out" when a strict test closes,
+and an evening reminder if today's 25 questions are not done. Each can be switched off under Me → Notifications.
+The server side is `PushNotifier` in the Rails app. Without Firebase set up, the app runs normally with notifications off.
+
+One-time setup:
+1. Create a project at https://console.firebase.google.com
+2. `flutter pub add firebase_core firebase_messaging`
+3. `dart pub global activate flutterfire_cli`, then `flutterfire configure` in this folder (pick the project,
+   Android and iOS). It adds `google-services.json` and the Gradle plugin.
+4. On the server (Render): Firebase → Project settings → Service accounts → Generate new private key,
+   and paste the whole JSON file into the `FIREBASE_CREDENTIALS` environment variable.
+
+Test it: sign in as a student on a real phone (or an emulator with Google Play), allow notifications,
+then have a teacher create an open test for that student's exam; it arrives about a minute later.
