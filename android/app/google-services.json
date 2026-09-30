@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762425861205",
+    "project_id": "rankwise-9e100",
+    "storage_bucket": "rankwise-9e100.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762425861205:android:46fc8660f7265693f260dc",
+        "android_client_info": {
+          "package_name": "com.example.upsc_questions_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlrYtV2wBOg1n4A2nAcI5NhhgHdMVNq5w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
