@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Needed to talk to the Rankwise server. Without it here, release builds (flutter build apk,
-         flutter run --release) cannot reach the internet; only debug builds get it automatically. -->
+    <!-- Needed to talk to the Rankwise server. Without it here, release builds cannot reach
+         the internet; only debug builds get it automatically. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Rankwise"
