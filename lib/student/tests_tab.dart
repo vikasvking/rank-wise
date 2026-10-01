@@ -5,6 +5,7 @@ import '../core/json.dart';
 import '../core/session.dart';
 import '../widgets/common.dart';
 import '../widgets/test_card.dart';
+import 'history_screen.dart';
 import 'test_detail_screen.dart';
 
 /// Every test the student can see, like the website's "All Tests" page.
@@ -37,6 +38,14 @@ class _TestsTabState extends State<TestsTab> {
       appBar: AppBar(
         title: const Text('Tests'),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HistoryScreen()),
+            ),
+            icon: const Icon(Icons.history),
+            tooltip: 'My tests',
+          ),
           TextButton.icon(
             onPressed: _enterPin,
             icon: const Icon(Icons.pin_outlined),
