@@ -108,6 +108,10 @@ class _ResultsTab extends StatelessWidget {
     final results = data.list('results');
     final blocked = data.list('blocked');
     final rating = data.objOrNull('rating');
+    final questions = data.list('questions'); // question-wise analysis
+    final topics = data.list('topics');
+    final exportPath = data.strOrNull('export_path');
+    final reportPath = data.strOrNull('report_path');
     final pin = test.strOrNull('pin_code');
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
@@ -170,6 +174,34 @@ class _ResultsTab extends StatelessWidget {
               style: text.bodySmall,
             ),
           ],
+          if (exportPath != null || reportPath != null) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (exportPath != null)
+                  OutlinedButton.icon(
+                    onPressed: () => openWebsite(context, exportPath),
+                    icon: const Icon(Icons.download),
+                    label: const Text('Excel (CSV)'),
+                  ),
+                if (reportPath != null)
+                  OutlinedButton.icon(
+                    onPressed: () => openWebsite(context, reportPath),
+                    icon: const Icon(Icons.print_outlined),
+                    label: const Text('Printable report / PDF'),
+                  ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Opens on the website (sign in there if asked).',
+                style: text.bodySmall,
+              ),
+            ),
+          ],
           if (blocked.isNotEmpty) ...[
             const SectionTitle('🚫 Blocked students'),
             for (final b in blocked)
@@ -224,7 +256,120 @@ class _ResultsTab extends StatelessWidget {
                 ),
               ),
             ),
+          if (results.isNotEmpty && questions.isNotEmpty) ...[
+            const SectionTitle('Question-wise analysis'),
+            if (topics.length > 1) ...[
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final t in topics)
+                    Chip(
+                      label: Text(
+                        '${t.str('topic')} · ${fmtNum(t.dbl('correct_pct'), decimals: 1)}%',
+                      ),
+                      side: BorderSide(
+                        color: _scoreColor(context, t.dbl('correct_pct')),
+                      ),
+                    ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: Text(
+                  'Topics from weakest to strongest',
+                  style: text.bodySmall,
+                ),
+              ),
+            ],
+            for (final q in questions) _QuestionStatCard(stat: q),
+            Text(
+              'Letters are the question\'s own; strict tests showed each student the options in a different order.',
+              style: text.bodySmall,
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+/// Red under 40% correct, amber under 70%, green otherwise
+Color _scoreColor(BuildContext context, double? pct) {
+  final p = pct ?? 0;
+  if (p < 40) return context.rw.danger;
+  if (p < 70) return context.rw.warning;
+  return context.rw.success;
+}
+
+/// One question of the analysis: share correct, wrong and skipped, and the wrong option most students chose
+class _QuestionStatCard extends StatelessWidget {
+  const _QuestionStatCard({required this.stat});
+
+  final J stat;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final pct = stat.dbl('correct_pct') ?? 0;
+    final color = _scoreColor(context, pct);
+    final wrong = stat.objOrNull('common_wrong');
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 14,
+                  child: Text(
+                    '${stat.integer('number')}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    stat.str('content'),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${fmtNum(pct, decimals: 1)}%',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: color),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (pct / 100).clamp(0, 1).toDouble(),
+                minHeight: 6,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Answer ${stat.str('correct_answer')} · ✓ ${stat.integer('correct')} of ${stat.integer('students')}'
+              ' · ✗ ${stat.integer('wrong')} · skipped ${stat.integer('skipped')} · not attempted ${stat.integer('unattempted')}',
+              style: text.bodySmall,
+            ),
+            if (wrong != null)
+              Text(
+                'Most chosen wrong: ${wrong.str('letter')} (${wrong.integer('count')} students) ${wrong.str('text')}',
+                style: text.bodySmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
       ),
     );
   }

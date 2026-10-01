@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../core/api.dart';
 import '../core/format.dart';
 import '../core/json.dart';
+import '../core/screen_guard.dart';
 import '../core/session.dart';
 import '../widgets/common.dart';
 import 'result_screen.dart';
@@ -12,7 +13,12 @@ import 'result_screen.dart';
 /// Taking a test or a topic practice.
 ///
 /// Strict tests: the app sends a heartbeat every few seconds while it is open, and tells the server how long
-/// it was in the background when it comes back (the server decides: ignore, warn, or block).
+/// it was in the background when it comes back (the server decides: ignore, warn, or block). Another app
+/// holding the screen for a while (split screen, a chat bubble) counts as leaving too, and screenshots
+/// are blocked on Android.
+///
+/// Teacher tests stay open until the student submits (or time runs out), so answers can be checked and
+/// questions marked for review; topic practice still submits itself after the last question.
 class TestRunnerScreen extends StatefulWidget {
   const TestRunnerScreen({super.key, required this.token});
 
@@ -27,6 +33,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   J _attempt = <String, dynamic>{};
   List<J> _questions = <J>[];
   final Map<int, String> _answers = {}; // question id -> "A".."D" or "SKIPPED"
+  final Set<int> _marked = {}; // question ids marked for review
   int _index = 0;
   String? _selected;
   bool _loading = true;
@@ -38,12 +45,18 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   DateTime? _deadline;
   Timer? _tick;
   Timer? _heartbeat;
-  DateTime? _leftAt;
+  DateTime? _leftAt; // the app went to the background
+  DateTime? _inactiveAt; // another app or window took focus (split screen, chat bubble, call screen...)
   int _leaveCount = 0;
+
+  /// Another app holding the focus for this long counts as leaving a strict test; shorter is ignored
+  /// (pulling down the notification shade, a quick system dialog).
+  static const _otherAppAfter = Duration(seconds: 15);
   final Stopwatch _watch = Stopwatch();
 
   String get _base => '/attempts/${widget.token}';
   bool get _strict => _attempt.flag('strict');
+  bool get _isTest => _attempt.str('kind') == 'test'; // a teacher test, not topic practice
   J? get _question => _questions.isEmpty ? null : _questions[_index];
 
   @override
@@ -57,6 +70,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _stopTimers();
+    ScreenGuard.secure(false);
     super.dispose();
   }
 
@@ -75,6 +89,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
       final attempt = data.obj('attempt');
       final questions = data.list('questions');
       final answers = data.obj('answers');
+      final marked = data.ints('marked');
       setState(() {
         _attempt = attempt;
         _questions = questions;
@@ -84,6 +99,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
             for (final e in answers.entries)
               int.tryParse(e.key) ?? -1: e.value.toString(),
           });
+        _marked
+          ..clear()
+          ..addAll(marked);
         _leaveCount = attempt.integer('leave_count');
         final seconds = attempt.intOrNull('seconds_left');
         _deadline = seconds == null
@@ -96,6 +114,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
         _show(firstOpen < 0 ? 0 : firstOpen);
       });
       _startTimers();
+      if (_strict) ScreenGuard.secure(true);
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.code == 'finished') return _goToResult();
@@ -150,18 +169,45 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   void _goTo(int index) => setState(() => _show(index));
 
   /// Next question without an answer after the current one, wrapping round (as on the website).
-  int? _nextOpen() {
+  int? _nextOpen() =>
+      _nextWhere((id) => !_answers.containsKey(id));
+
+  /// Next question marked for review after the current one, wrapping round.
+  int? _nextMarked() => _nextWhere(_marked.contains);
+
+  int? _nextWhere(bool Function(int id) test) {
     final n = _questions.length;
     for (var step = 1; step < n; step++) {
       final i = (_index + step) % n;
-      if (!_answers.containsKey(_questions[i].integer('id'))) return i;
+      if (test(_questions[i].integer('id'))) return i;
     }
     return null;
   }
 
+  /// After saving: the next unanswered question; once all are answered, the next one marked for review.
+  void _moveOn() {
+    final open = _nextOpen();
+    if (open != null) {
+      setState(() => _show(open));
+      return;
+    }
+    final marked = _nextMarked();
+    showSnack(
+      context,
+      marked != null
+          ? 'All questions answered. Here is the next one you marked for review.'
+          : _marked.isEmpty
+          ? 'All questions answered. Check any answer from the grid, then submit.'
+          : 'All questions answered. ${_marked.length} still marked for review.',
+    );
+    setState(() => _show(marked ?? _index));
+  }
+
   // ---------- answering ----------
 
-  Future<void> _save(String choice) async {
+  /// Saves an answer (or a skip). On teacher tests "Save & next" also clears a review mark ([mark] false),
+  /// and "Mark for review & next" keeps one ([mark] true); a skip leaves the mark as it is.
+  Future<void> _save(String choice, {bool? mark}) async {
     final q = _question;
     if (q == null || _saving) return;
     setState(() => _saving = true);
@@ -170,14 +216,45 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
         'question_id': q.integer('id'),
         'choice': choice,
         'duration_seconds': _watch.elapsed.inSeconds,
+        if (_isTest && mark != null) 'marked': mark,
       });
       if (!mounted) return;
       _answers[q.integer('id')] = choice;
+      if (data['marked'] is List) {
+        _marked
+          ..clear()
+          ..addAll(data.ints('marked'));
+      }
       if (data.flag('finished')) {
         showSnack(context, data.str('message', 'Test submitted.'));
         return _goToResult();
       }
-      final next = _nextOpen();
+      _moveOn();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _handleError(e);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// "Mark for review & next": saves the chosen option too, if there is one.
+  Future<void> _markAndNext() async {
+    final selected = _selected;
+    if (selected != null) return _save(selected, mark: true);
+    final q = _question;
+    if (q == null || _saving) return;
+    setState(() => _saving = true);
+    try {
+      final data = await AppScope.read(context).api.post('$_base/mark', {
+        'question_id': q.integer('id'),
+        'marked': true,
+      });
+      if (!mounted) return;
+      _marked
+        ..clear()
+        ..addAll(data.ints('marked'));
+      final next = _nextOpen() ?? _nextMarked();
       setState(() => _show(next ?? _index));
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -191,12 +268,19 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
     final open = _questions
         .where((q) => !_answers.containsKey(q.integer('id')))
         .length;
+    final marked = _questions
+        .where((q) => _marked.contains(q.integer('id')))
+        .length;
+    final left = [
+      if (open > 0) '$open question${open == 1 ? '' : 's'} not answered',
+      if (marked > 0) '$marked marked for review',
+    ];
     final ok = await confirmDialog(
       context,
       title: 'Submit test?',
-      message: open == 0
-          ? 'You have answered every question.'
-          : '$open question${open == 1 ? '' : 's'} still unanswered. You cannot change answers after submitting.',
+      message: left.isEmpty
+          ? 'You have answered every question. You cannot change answers after submitting.'
+          : 'You still have ${left.join(' and ')}. You cannot change answers after submitting.',
       confirmLabel: 'Submit',
     );
     if (!ok || !mounted) return;
@@ -252,10 +336,17 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
 
   // ---------- strict mode ----------
 
+  /// In the background, or another app has had the focus for a while: no heartbeats then, so the
+  /// server sees the silence even if the student never comes back.
+  bool get _away {
+    final inactive = _inactiveAt;
+    return _leftAt != null ||
+        (inactive != null &&
+            DateTime.now().difference(inactive) >= _otherAppAfter);
+  }
+
   Future<void> _sendHeartbeat() async {
-    if (_done || _leftAt != null) {
-      return; // no heartbeats while the app is in the background
-    }
+    if (_done || _away) return;
     try {
       final data = await AppScope.read(context).api.post('$_base/heartbeat');
       if (mounted) _applyStrictState(data);
@@ -264,24 +355,42 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
     }
   }
 
+  // Going to another app: resumed -> inactive -> hidden -> paused. Split screen, a chat bubble or a call
+  // screen taking the focus: resumed -> inactive only (the test stays visible but is not in use).
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!_strict || _done || _loading) return;
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      _leftAt ??= DateTime.now();
-    } else if (state == AppLifecycleState.resumed) {
-      final left = _leftAt;
-      _leftAt = null;
-      if (left != null) _reportLeave(DateTime.now().difference(left).inSeconds);
+    final now = DateTime.now();
+    switch (state) {
+      case AppLifecycleState.inactive:
+        _inactiveAt ??= now;
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        _leftAt ??= _inactiveAt ?? now;
+      case AppLifecycleState.resumed:
+        final left = _leftAt;
+        final inactive = _inactiveAt;
+        _leftAt = null;
+        _inactiveAt = null;
+        if (left != null) {
+          _reportLeave(now.difference(left).inSeconds);
+        } else if (inactive != null &&
+            now.difference(inactive) >= _otherAppAfter) {
+          _reportLeave(
+            now.difference(inactive).inSeconds,
+            kind: 'other_app_on_screen',
+          );
+        }
+      case AppLifecycleState.detached:
+        break;
     }
   }
 
-  Future<void> _reportLeave(int seconds) async {
+  Future<void> _reportLeave(int seconds, {String kind = 'background'}) async {
     try {
       final data = await AppScope.read(
         context,
-      ).api.post('$_base/report_leave', {'seconds': seconds});
+      ).api.post('$_base/report_leave', {'seconds': seconds, 'kind': kind});
       if (mounted) _applyStrictState(data);
     } catch (_) {
       // offline: the next heartbeat will tell
@@ -349,8 +458,10 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
               children: [
                 Text('Questions', style: Theme.of(ctx).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                const Text(
-                  'Filled = answered · outlined = skipped · empty = not yet',
+                Text(
+                  _isTest
+                      ? 'Filled = answered · outlined = skipped · empty = not yet · dot = marked for review'
+                      : 'Filled = answered · outlined = skipped · empty = not yet',
                 ),
                 const SizedBox(height: 12),
                 Flexible(
@@ -362,34 +473,40 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
                         for (var i = 0; i < _questions.length; i++)
                           Builder(
                             builder: (_) {
-                              final a = _answers[_questions[i].integer('id')];
+                              final id = _questions[i].integer('id');
+                              final a = _answers[id];
                               final answered = a != null && a != 'SKIPPED';
-                              return SizedBox(
-                                width: 44,
-                                height: 44,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    backgroundColor: answered
-                                        ? scheme.primary
-                                        : null,
-                                    foregroundColor: answered
-                                        ? scheme.onPrimary
-                                        : null,
-                                    side: BorderSide(
-                                      color: i == _index
-                                          ? scheme.tertiary
-                                          : (a == 'SKIPPED'
-                                                ? scheme.primary
-                                                : scheme.outlineVariant),
-                                      width: i == _index ? 3 : 1,
+                              return Badge(
+                                isLabelVisible: _marked.contains(id),
+                                smallSize: 10,
+                                backgroundColor: Colors.deepPurple,
+                                child: SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child: OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      backgroundColor: answered
+                                          ? scheme.primary
+                                          : null,
+                                      foregroundColor: answered
+                                          ? scheme.onPrimary
+                                          : null,
+                                      side: BorderSide(
+                                        color: i == _index
+                                            ? scheme.tertiary
+                                            : (a == 'SKIPPED'
+                                                  ? scheme.primary
+                                                  : scheme.outlineVariant),
+                                        width: i == _index ? 3 : 1,
+                                      ),
                                     ),
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      _goTo(i);
+                                    },
+                                    child: Text('${i + 1}'),
                                   ),
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    _goTo(i);
-                                  },
-                                  child: Text('${i + 1}'),
                                 ),
                               );
                             },
@@ -468,6 +585,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
     final text = Theme.of(context).textTheme;
     final answeredCount = _answers.length;
     final saved = _answers[q.integer('id')];
+    final marked = _marked.contains(q.integer('id'));
+    // On strict tests the server sends the options already shuffled for this student, under A-D
     final options = q.obj('options');
 
     return Column(
@@ -497,6 +616,17 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
                 'Question ${_index + 1} of ${_questions.length}${q.str('topic').isNotEmpty ? ' · ${q.str('topic')}' : ''}',
                 style: text.labelLarge?.copyWith(color: scheme.outline),
               ),
+              if (marked)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    '🚩 Marked for review',
+                    style: text.labelMedium?.copyWith(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               const SizedBox(height: 8),
               Text(
                 q.str('content'),
@@ -553,7 +683,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
                       child: FilledButton(
                         onPressed: _saving || _selected == null
                             ? null
-                            : () => _save(_selected!),
+                            : () => _save(_selected!, mark: false),
                         child: Text(_saving ? 'Saving…' : 'Save & next'),
                       ),
                     ),
@@ -567,11 +697,28 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
                     ),
                   ],
                 ),
-                TextButton(
-                  onPressed: _saving ? null : _submit,
-                  child: Text(
-                    'Submit test · $answeredCount of ${_questions.length} answered',
-                  ),
+                Row(
+                  children: [
+                    if (_isTest)
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: _saving ? null : _markAndNext,
+                          icon: const Icon(Icons.flag_outlined, size: 18),
+                          label: const Text('Mark for review'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.deepPurple,
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: _saving ? null : _submit,
+                        child: Text(
+                          'Submit · $answeredCount of ${_questions.length}',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

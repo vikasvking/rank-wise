@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../firebase_options.dart';
 import 'json.dart';
 import 'session.dart';
 
@@ -48,7 +49,12 @@ class PushService {
 
   Future<void> init() async {
     try {
-      await Firebase.initializeApp();
+      final options = DefaultFirebaseOptions.currentPlatform;
+      if (options == null) {
+        debugPrint('[push] no Firebase settings for this platform, notifications are off');
+        return;
+      }
+      await Firebase.initializeApp(options: options);
       available = true;
     } catch (e) {
       debugPrint('[push] Firebase is not set up, notifications are off: $e');

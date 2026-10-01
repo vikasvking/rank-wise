@@ -1,16 +1,19 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'json.dart';
 
-/// Who is signed in. Keeps the API token on the device so the app stays signed in.
+/// Who is signed in. Keeps the API token on the device so the app stays signed in: in the phone's
+/// secure storage (Android Keystore, iOS Keychain), not in plain app preferences.
 class AppSession extends ChangeNotifier {
   AppSession() {
     api.onUnauthorized = _expired;
   }
 
   static const _tokenKey = 'rankwise_api_token';
+  static const _secure = FlutterSecureStorage();
 
   final ApiClient api = ApiClient();
 
@@ -39,8 +42,7 @@ class AppSession extends ChangeNotifier {
   J? get accountIssue => user?.objOrNull('account_issue');
 
   Future<void> restore() async {
-    final prefs = await SharedPreferences.getInstance();
-    api.token = prefs.getString(_tokenKey);
+    api.token = await _readToken();
     if (api.token != null) {
       try {
         user = (await api.get('/me')).obj('user');
@@ -71,8 +73,7 @@ class AppSession extends ChangeNotifier {
     });
     final token = data.str('token');
     api.token = token;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    await _writeToken(token);
     user = data.obj('user');
     notice = null;
     startupError = null;
@@ -115,8 +116,40 @@ class AppSession extends ChangeNotifier {
   Future<void> _clear() async {
     api.token = null;
     user = null;
+    try {
+      await _secure.delete(key: _tokenKey);
+    } catch (_) {
+      // nothing stored, or the storage is unreadable: either way the token is gone
+    }
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
+    await prefs.remove(_tokenKey); // left by app versions before secure storage
+  }
+
+  // ---------- where the token is kept ----------
+
+  /// Older versions of the app kept the token in plain SharedPreferences. It is moved into secure
+  /// storage the first time this version starts, so nobody has to sign in again.
+  Future<String?> _readToken() async {
+    try {
+      final token = await _secure.read(key: _tokenKey);
+      if (token != null) return token;
+    } catch (_) {
+      // unreadable (for example after the phone was restored from a backup): sign in again
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final old = prefs.getString(_tokenKey);
+    if (old != null && await _writeToken(old)) await prefs.remove(_tokenKey);
+    return old;
+  }
+
+  /// True when the token was saved
+  Future<bool> _writeToken(String token) async {
+    try {
+      await _secure.write(key: _tokenKey, value: token);
+      return true;
+    } catch (_) {
+      return false; // still signed in for now; the next start asks to sign in again
+    }
   }
 }
 

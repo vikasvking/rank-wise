@@ -2,7 +2,9 @@
     <!-- Needed to talk to the Rankwise server. Without it here, release builds cannot reach
          the internet; only debug builds get it automatically. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- allowBackup off: a backup of secure storage cannot be read on another phone (flutter_secure_storage) -->
     <application
+        android:allowBackup="false"
         android:label="Rankwise"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
