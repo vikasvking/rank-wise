@@ -26,9 +26,13 @@ void main() {
   final theme = ThemeController()..load();
 
   // Push notifications (students): a tap opens the test or result; while the app is open they show as a bar
-  final push = PushService(session)
-    ..onOpen = (data) => _openFromNotification(session, data)
-    ..onForeground = (title, body, data) => _showInApp(session, title, body, data);
+    final push = PushService(session)
+    ..onOpen = (data) {
+      _openFromNotification(session, data);
+    }
+    ..onForeground = (title, body, data) {
+      _showInApp(session, title, body, data);
+    };
   PushService.instance = push;
   push.init();
 
