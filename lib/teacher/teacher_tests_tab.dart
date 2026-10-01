@@ -9,7 +9,7 @@ import '../widgets/test_card.dart';
 import 'test_editor_screen.dart';
 import 'test_results_screen.dart';
 
-/// The teacher's tests (admins see every test).
+/// The teacher's tests (admins see every test): one exam at a time, 50 at a time as you scroll.
 class TeacherTestsTab extends StatefulWidget {
   const TeacherTestsTab({super.key});
 
@@ -18,19 +18,80 @@ class TeacherTestsTab extends StatefulWidget {
 }
 
 class _TeacherTestsTabState extends State<TeacherTestsTab> {
-  int _version = 0;
+  final List<J> _tests = [];
+  List<J> _exams = []; // [{code, name, count}] - exams that have tests
+  String? _exam; // null = every exam
+  int? _nextPage = 1;
+  bool _loading = false;
+  String? _error;
+  int _request = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _reset();
+  }
+
+  /// Starts the list again from page 1 (after a filter change, a pull to refresh or a saved test).
+  Future<void> _reset() async {
+    _tests.clear();
+    _nextPage = 1;
+    await _loadMore(force: true);
+  }
+
+  Future<void> _loadMore({bool force = false}) async {
+    final page = _nextPage;
+    if (page == null || (_loading && !force)) return;
+    final request = ++_request;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final data = await AppScope.read(context).api.get('/teacher/tests', {
+        'exam': _exam,
+        'page': page,
+      });
+      if (!mounted || request != _request) return;
+      setState(() {
+        _tests.addAll(data.list('tests'));
+        _exams = data.list('exams');
+        _nextPage = data.intOrNull('next_page');
+      });
+    } catch (e) {
+      if (mounted && request == _request) setState(() => _error = messageOf(e));
+    } finally {
+      if (mounted && request == _request) setState(() => _loading = false);
+    }
+  }
+
+  void _pickExam(String? code) {
+    if (_exam == code) return;
+    _exam = code;
+    _reset();
+  }
 
   Future<void> _openEditor([int? testId]) async {
     final saved = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => TestEditorScreen(testId: testId)),
     );
-    if (saved == true && mounted) setState(() => _version++);
+    if (saved == true && mounted) _reset();
+  }
+
+  Future<void> _openResults(J test) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TestResultsScreen(testId: test.integer('id')),
+      ),
+    );
+    if (mounted) _reset();
   }
 
   @override
   Widget build(BuildContext context) {
-    final api = AppScope.read(context).api;
+    final total = _exams.fold<int>(0, (sum, e) => sum + e.integer('count'));
     return Scaffold(
       appBar: AppBar(
         title: const Text('My tests'),
@@ -41,41 +102,84 @@ class _TeacherTestsTabState extends State<TeacherTestsTab> {
         icon: const Icon(Icons.add),
         label: const Text('New test'),
       ),
-      body: Loader<J>(
-        key: ValueKey(_version),
-        load: () => api.get('/teacher/tests'),
-        builder: (context, data, reload) {
-          final tests = data.list('tests');
-          return RefreshIndicator(
-            onRefresh: reload,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-              children: [
-                if (tests.isEmpty)
-                  const EmptyView(
-                    'No tests yet. Tap "New test" to make one, or upload an Excel sheet on the website.',
+      body: Column(
+        children: [
+          if (_exams.isNotEmpty)
+            SizedBox(
+              height: 52,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                children: [
+                  ChoiceChip(
+                    label: Text('All exams ($total)'),
+                    selected: _exam == null,
+                    onSelected: (_) => _pickExam(null),
                   ),
-                for (final t in tests)
-                  _TeacherTestCard(
-                    test: t,
-                    onOpen: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              TestResultsScreen(testId: t.integer('id')),
-                        ),
-                      );
-                      reload();
-                    },
-                    onEdit: t.flag('locked')
-                        ? null
-                        : () => _openEditor(t.integer('id')),
-                  ),
-              ],
+                  for (final e in _exams) ...[
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: Text('${e.str('name')} (${e.integer('count')})'),
+                      selected: _exam == e.str('code'),
+                      onSelected: (on) => _pickExam(on ? e.str('code') : null),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          );
-        },
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _reset,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (n) {
+                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 300) {
+                    _loadMore();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  itemCount: _tests.length + 1,
+                  itemBuilder: (context, i) {
+                    if (i == _tests.length) {
+                      if (_loading) {
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      if (_tests.isEmpty && _error == null) {
+                        return EmptyView(
+                          _exam == null
+                              ? 'No tests yet. Tap "New test" to make one, or upload an Excel sheet on the website.'
+                              : 'No tests for this exam yet.',
+                        );
+                      }
+                      return const SizedBox(height: 24);
+                    }
+                    final t = _tests[i];
+                    return _TeacherTestCard(
+                      test: t,
+                      onOpen: () => _openResults(t),
+                      onEdit: t.flag('locked')
+                          ? null
+                          : () => _openEditor(t.integer('id')),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
