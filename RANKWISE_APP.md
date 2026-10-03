@@ -1,8 +1,8 @@
-# Rankwise mobile app (Flutter)
+# Lakshyank mobile app (Flutter)
 
 One app for students and teachers. After sign-in it opens the student screens
 (Home, Tests, Practice, Ranks, Me) or the teacher screens (Tests, Questions, Me).
-It talks to the Rankwise website's JSON API at `/api/v1` (apply the Rails API patch first).
+It talks to the Lakshyank website's JSON API at `/api/v1` (apply the Rails API patch first).
 
 Needs Flutter 3.29 or newer (Dart 3.7+).
 
@@ -84,6 +84,11 @@ One-time setup:
    Android and iOS). It adds `google-services.json` and the Gradle plugin.
 4. On the server (Render): Firebase → Project settings → Service accounts → Generate new private key,
    and paste the whole JSON file into the `FIREBASE_CREDENTIALS` environment variable.
+
+**App ID `com.lakshyank.app`** (Android and iOS). Firebase ties each app to its ID, so after the ID changed:
+run `flutterfire configure` again, pick the same project (rankwise-9e100), tick Android and iOS. It registers
+`com.lakshyank.app`, then rewrites `google-services.json`, `GoogleService-Info.plist` and `lib/firebase_options.dart`.
+Until then the Android build stops with "No matching client found for package name 'com.lakshyank.app'".
 
 Test it: sign in as a student on a real phone (or an emulator with Google Play), allow notifications,
 then have a teacher create an open test for that student's exam; it arrives about a minute later.

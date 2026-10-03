@@ -1,4 +1,4 @@
-package com.example.upsc_questions_app
+package com.lakshyank.app
 
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity

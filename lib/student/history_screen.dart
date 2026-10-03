@@ -195,6 +195,7 @@ class _AttemptCard extends StatelessWidget {
     final about = [
       if (isTest) examName(a.obj('exam')),
       if (retake != null) 'Retake $retake, practice' else if (a.flag('retake')) 'Retake, practice',
+      if (a.strOrNull('ended_reason') != null) 'Ended early: you left the test',
       '${a.time('finished_at') != null ? 'Submitted' : 'Started'} ${fmtDateTime(when)}',
     ].join(' · ');
 
@@ -272,7 +273,7 @@ class _AttemptCard extends StatelessWidget {
     return [
       '${fmtNum(a.dbl('marks'))} / ${fmtNum(a.dbl('max_marks'))}',
       pct,
-      if (passed != null) passed,
+      ?passed,
     ].join(' · ');
   }
 }

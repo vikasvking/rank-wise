@@ -43,7 +43,7 @@ class _NotificationSettingsCardState extends State<NotificationSettingsCard> {
     final push = PushService.instance;
     final note = push == null || !push.available
         ? 'Notifications are not set up in this version of the app.'
-        : (push.asked && !push.permitted ? 'Notifications are blocked for Rankwise. Allow them in your phone\'s settings to get these.' : null);
+        : (push.asked && !push.permitted ? 'Notifications are blocked for Lakshyank. Allow them in your phone\'s settings to get these.' : null);
 
     return SurfaceCard(
       padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),

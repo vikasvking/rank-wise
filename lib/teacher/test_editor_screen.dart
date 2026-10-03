@@ -122,10 +122,6 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
     if (_startsAt != null && _endsAt != null && !_endsAt!.isAfter(_startsAt!)) {
       return 'The closing time must be after the opening time.';
     }
-    if (_strict && _access != 'pin') return 'Strict mode needs PIN access.';
-    if (_strict && _endsAt == null) {
-      return 'Strict mode needs a closing time (results are shown after it).';
-    }
     if (_questions.isEmpty) return 'Add at least one question.';
     return _audience.problem(forTest: true);
   }
@@ -299,7 +295,6 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
           showSelectedIcon: false,
           onSelectionChanged: (s) => setState(() {
             _access = s.first;
-            if (_access != 'pin') _strict = false;
           }),
         ),
         const SizedBox(height: 4),
@@ -312,13 +307,15 @@ class _TestEditorScreenState extends State<TestEditorScreen> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('🛡️ Strict mode'),
-          subtitle: const Text(
-            'Leaving the test warns once, then blocks. Marks show after the closing time. Needs PIN and a closing time.',
+          subtitle: Text(
+            _access == 'pin'
+                ? 'Leaving the test warns once, then blocks the student until you reinstate them.'
+                      '${_endsAt != null ? ' Marks show after the closing time.' : ''}'
+                : 'Open test: leaving the test ends it at once and submits what the student answered.'
+                      '${_endsAt != null ? ' Marks show after the closing time.' : ''}',
           ),
           value: _strict,
-          onChanged: _access == 'pin'
-              ? (v) => setState(() => _strict = v)
-              : null,
+          onChanged: (v) => setState(() => _strict = v),
         ),
         const SizedBox(height: 4),
         Text('Time window (optional)', style: text.titleSmall),

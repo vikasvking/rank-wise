@@ -1,4 +1,4 @@
-/// Where the Rankwise website runs. The app talks to its API at `<kSiteUrl>/api/v1`.
+/// Where the Lakshyank website runs. The app talks to its API at `<kSiteUrl>/api/v1`.
 ///
 /// Change the default below, or pass it when building:
 ///   flutter run --dart-define=RANKWISE_URL=https://your-site.onrender.com

@@ -56,6 +56,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
 
   String get _base => '/attempts/${widget.token}';
   bool get _strict => _attempt.flag('strict');
+  // strict open tests: leaving ends the test at once; strict PIN tests warn, then block
+  bool get _endsOnLeave => _attempt.flag('ends_on_leave');
   bool get _isTest => _attempt.str('kind') == 'test'; // a teacher test, not topic practice
   J? get _question => _questions.isEmpty ? null : _questions[_index];
 
@@ -227,7 +229,8 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
       }
       if (data.flag('finished')) {
         showSnack(context, data.str('message', 'Test submitted.'));
-        return _goToResult();
+        await _goToResult();
+        return;
       }
       _moveOn();
     } on ApiException catch (e) {
@@ -308,7 +311,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
   void _handleError(ApiException e) {
     switch (e.code) {
       case 'finished':
-        _goToResult();
+        _goToResult(message: _endsOnLeave ? e.message : null);
       case 'blocked':
         _showBlocked(e.message);
       default:
@@ -316,10 +319,15 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
     }
   }
 
-  void _goToResult() {
+  /// [message]: why a strict open test ended early, shown before the result.
+  Future<void> _goToResult({String? message}) async {
     if (_done) return;
     _done = true;
     _stopTimers();
+    if (message != null && message.isNotEmpty) {
+      await showMessageDialog(context, '🛡️ Your test ended', message);
+      if (!mounted) return;
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => ResultScreen(token: widget.token)),
@@ -407,7 +415,7 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
           ),
         );
       case 'finished':
-        _goToResult();
+        _goToResult(message: data.strOrNull('message'));
       case 'ok':
         final count = data.integer('leave_count', _leaveCount);
         if (count > _leaveCount && !_done) {
@@ -600,7 +608,9 @@ class _TestRunnerScreenState extends State<TestRunnerScreen>
             color: scheme.errorContainer,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
-              '🛡️ Strict test — stay in the app. Warnings left: ${_attempt.integer('warnings_left')}',
+              _endsOnLeave
+                  ? '🛡️ Strict test — stay in the app. Leaving it ends your test.'
+                  : '🛡️ Strict test — stay in the app. Warnings left: ${_attempt.integer('warnings_left')}',
               style: TextStyle(
                 color: scheme.onErrorContainer,
                 fontSize: 12,

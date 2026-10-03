@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.lakshyank.app</string>
+	<string>com.example.upscQuestionsApp</string>
 	<key>PROJECT_ID</key>
 	<string>rankwise-9e100</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:762425861205:ios:51d23b84bb1c0214f260dc</string>
+	<string>1:762425861205:ios:9c7b143b0c180834f260dc</string>
 </dict>
 </plist>

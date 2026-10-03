@@ -71,7 +71,7 @@ Future<void> showMessageDialog(
   );
 }
 
-/// Opens a page of the Rankwise website in the browser (sign-up, password reset, Excel uploads...).
+/// Opens a page of the Lakshyank website in the browser (sign-up, password reset, Excel uploads...).
 Future<void> openWebsite(BuildContext context, String path) async {
   final ok = await launchUrl(
     Uri.parse('$kSiteUrl$path'),
@@ -612,7 +612,7 @@ class ThemeModePicker extends StatelessWidget {
   }
 }
 
-/// The website's logo: a brand-coloured "R" tile next to the name.
+/// The website's logo: the Lakshya mark in a brand-coloured tile, the name, and लक्ष्यांक beside it.
 class BrandTitle extends StatelessWidget {
   const BrandTitle({super.key});
 
@@ -630,17 +630,12 @@ class BrandTitle extends StatelessWidget {
             color: rw.button,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Text(
-            'R',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: const LakshyaMark(size: 20),
         ),
         const SizedBox(width: 10),
-        const Text('Rankwise'),
+        const Text('Lakshyank'),
+        const SizedBox(width: 6),
+        Text('लक्ष्यांक', style: TextStyle(fontSize: 12, color: rw.muted)),
       ],
     );
   }
@@ -661,4 +656,42 @@ class BrandNavBar extends StatelessWidget {
       child: child,
     );
   }
+}
+
+/// The Lakshya mark: an arrow lodged in the bullseye, the same shape as the website logo and the app icon
+/// (the ring-and-arrow version that stays clear at small sizes). Drawn in [color] on a 64-unit grid.
+class LakshyaMark extends StatelessWidget {
+  const LakshyaMark({super.key, required this.size, this.color = Colors.white});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomPaint(size: Size.square(size), painter: _LakshyaMarkPainter(color));
+}
+
+class _LakshyaMarkPainter extends CustomPainter {
+  _LakshyaMarkPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 64);
+    final pen = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    const centre = Offset(29, 35);
+    canvas.drawCircle(centre, 24, pen); // outer ring
+    canvas.drawCircle(centre, 11, pen); // inner ring
+    canvas.drawLine(centre, const Offset(57, 7), pen); // arrow shaft, tip in the bullseye
+    canvas.drawPath(Path()..moveTo(52, 2.5)..lineTo(51, 12)..lineTo(61.5, 11), pen); // feathers
+  }
+
+  @override
+  bool shouldRepaint(_LakshyaMarkPainter old) => old.color != color;
 }

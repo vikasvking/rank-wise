@@ -1,11 +1,11 @@
 {
-    "name": "upsc_questions_app",
-    "short_name": "upsc_questions_app",
+    "name": "Lakshyank",
+    "short_name": "Lakshyank",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#9F1239",
+    "description": "Test series and practice for UPSC, JEE, NEET, SSC, Banking and CBSE.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -74,25 +74,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: rw.button,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Text(
-                          'R',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: const LakshyaMark(size: 40),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Rankwise',
+                      'Lakshyank',
                       textAlign: TextAlign.center,
                       style: text.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: rw.strong,
                         letterSpacing: -0.5,
                       ),
+                    ),
+                    Text(
+                      'लक्ष्यांक',
+                      textAlign: TextAlign.center,
+                      style: text.titleSmall?.copyWith(color: rw.muted),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -168,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const Divider(height: 32),
                     Text(
-                      'New to Rankwise?',
+                      'New to Lakshyank?',
                       textAlign: TextAlign.center,
                       style: text.bodyMedium,
                     ),

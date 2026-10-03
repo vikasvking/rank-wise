@@ -233,7 +233,8 @@ class _ResultsTab extends StatelessWidget {
                 title: Text(r.str('name')),
                 subtitle: Text(
                   '✓ ${r.integer('correct')}  ✗ ${r.integer('wrong')}  – ${r.integer('skipped') + r.integer('unattempted')}'
-                  ' · ${fmtDuration(r.intOrNull('time_taken'))}',
+                  ' · ${fmtDuration(r.intOrNull('time_taken'))}'
+                  '${r.strOrNull('ended_reason') != null ? '\nEnded early: ${r.str('ended_reason')}' : ''}',
                 ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -515,6 +516,8 @@ class _LiveTabState extends State<_LiveTab> {
                       r.str('status') != 'submitted')
                     '${fmtDuration(r.intOrNull('seconds_left'))} left',
                   if (r.str('status') == 'blocked') r.str('block_reason'),
+                  if (r.strOrNull('ended_reason') != null)
+                    'Ended early: ${r.str('ended_reason')}',
                 ];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),

@@ -36,7 +36,7 @@ void main() {
   PushService.instance = push;
   push.init();
 
-  runApp(RankwiseApp(session: session, theme: theme));
+  runApp(LakshyankApp(session: session, theme: theme));
 }
 
 void _openFromNotification(AppSession session, Map<String, dynamic> data) {
@@ -72,8 +72,8 @@ void _showInApp(AppSession session, String title, String body, Map<String, dynam
     );
 }
 
-class RankwiseApp extends StatelessWidget {
-  const RankwiseApp({super.key, required this.session, required this.theme});
+class LakshyankApp extends StatelessWidget {
+  const LakshyankApp({super.key, required this.session, required this.theme});
 
   final AppSession session;
   final ThemeController theme;
@@ -91,7 +91,7 @@ class RankwiseApp extends StatelessWidget {
           builder: (context, _) {
             final brand = Ramp.forRole(session.user?.str('role'));
             return MaterialApp(
-              title: 'Rankwise',
+              title: 'Lakshyank',
               debugShowCheckedModeBanner: false,
               navigatorKey: navigatorKey,
               scaffoldMessengerKey: messengerKey,

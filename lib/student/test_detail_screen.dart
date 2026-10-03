@@ -37,10 +37,12 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       final ok = await confirmDialog(
         context,
         title: 'Strict test',
-        message:
-            'Stay in the app until you submit. Switching to another app, locking your phone or leaving the test '
-            'counts as leaving. The first time is a warning; the second time you are blocked and only your teacher '
-            'can let you continue.',
+        message: test.flag('strict_ends_on_leave')
+            ? 'Stay in the app until you submit. Switching to another app, locking your phone or leaving the test '
+                  'ends your test straight away: the questions you have answered are submitted and marked.'
+            : 'Stay in the app until you submit. Switching to another app, locking your phone or leaving the test '
+                  'counts as leaving. The first time is a warning; the second time you are blocked and only your teacher '
+                  'can let you continue.',
         confirmLabel: 'I understand, start',
       );
       if (!ok) return;

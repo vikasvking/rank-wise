@@ -64,7 +64,7 @@ class PushService {
     _subscriptions
       ..add(FirebaseMessaging.onMessage.listen((m) {
         final n = m.notification;
-        if (n != null) onForeground?.call(n.title ?? 'Rankwise', n.body ?? '', m.data);
+        if (n != null) onForeground?.call(n.title ?? 'Lakshyank', n.body ?? '', m.data);
       }))
       ..add(FirebaseMessaging.onMessageOpenedApp.listen((m) => onOpen?.call(m.data)))
       ..add(messaging.onTokenRefresh.listen((token) {

@@ -1,6 +1,6 @@
 import 'dart:ui' show Color;
 
-/// The Tailwind colours the Rankwise website uses (app/assets/tailwind/application.css and the view classes),
+/// The Tailwind colours the Lakshyank website uses (app/assets/tailwind/application.css and the view classes),
 /// so the app matches the site shade for shade.
 abstract final class Tw {
   static const slate50 = Color(0xFFF8FAFC);

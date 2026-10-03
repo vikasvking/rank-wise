@@ -68,6 +68,13 @@ class ResultScreen extends StatelessWidget {
                     '${data.str('message')}\nResults open ${fmtDateTime(data.time('release_at'))}.',
                     textAlign: TextAlign.center,
                   ),
+                  if (attempt.flag('ended_early')) ...[
+                    const SizedBox(height: 16),
+                    NoticeBox(
+                      tone: NoticeTone.danger,
+                      child: Text(attempt.str('ended_message')),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -93,6 +100,13 @@ class ResultScreen extends StatelessWidget {
                   '${examName(attempt.obj('exam'))} marking: ${attempt.obj('exam').str('marking')}',
                   style: text.bodySmall,
                 ),
+                if (attempt.flag('ended_early')) ...[
+                  const SizedBox(height: 12),
+                  NoticeBox(
+                    tone: NoticeTone.danger,
+                    child: Text(attempt.str('ended_message')),
+                  ),
+                ],
                 if (data.flag('can_retake') && testId != null) ...[
                   const SizedBox(height: 14),
                   FilledButton.icon(
